@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 
 from src.rag_system import RAGDemo
-from config import get_api_key
+from config import GEMINI_API_KEY
 
 # Page configuration
 st.set_page_config(
@@ -81,8 +81,6 @@ if 'chunks_count' not in st.session_state:
 
 # Initialize RAG system on startup
 if st.session_state.rag_system is None:
-    GEMINI_API_KEY = get_api_key()
-    
     if not GEMINI_API_KEY:
         st.error("❌ GEMINI_API_KEY not configured!")
         st.info("💡 Add your API key in Streamlit Cloud secrets or set environment variable")

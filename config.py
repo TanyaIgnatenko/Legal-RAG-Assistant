@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+import streamlit as st
 
 # Project paths
 PROJECT_ROOT = Path(__file__).parent
@@ -15,10 +16,4 @@ LLM_MODEL = "gemini-pro"
 MIN_CHUNK_SIZE = 100
 DEFAULT_TOP_K = 3
 
-def get_api_key():
-    """Get API key from Streamlit secrets or environment"""
-    try:
-        import streamlit as st
-        return st.secrets.get("GEMINI_API_KEY", os.getenv("GEMINI_API_KEY", ""))
-    except:
-        return os.getenv("GEMINI_API_KEY", "")
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY", "")
