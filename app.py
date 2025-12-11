@@ -20,10 +20,12 @@ st.set_page_config(
 # Custom CSS
 st.markdown("""
     <style>
+    /* Sidebar width */
     [data-testid="stSidebar"] {
         min-width: 286px;
         max-width: 286px;
     }
+    
     .main {
         padding: 2rem;
     }
@@ -104,8 +106,6 @@ with st.sidebar:
     )
     
     if doc_source == "GDPR (Pre-loaded)":
-        st.info("📄 Using example_data/gdpr.pdf")
-        
         if st.button("Load GDPR Document"):
             if st.session_state.rag_system:
                 gdpr_path = "example_data/gdpr.pdf"
@@ -229,21 +229,6 @@ if not st.session_state.document_loaded:
             - Verify answer accuracy
         """)
     
-    st.markdown("---")
-    st.markdown("### 📋 Prerequisites:")
-    st.code("""
-# 1. Install dependencies:
-pip install streamlit pymupdf sentence-transformers faiss-cpu google-generativeai numpy
-
-# 2. Set your API key in app.py:
-GEMINI_API_KEY = "your-api-key-here"
-
-# 3. Place your PDF (e.g., gdpr.pdf) in the same directory
-
-# 4. Run the app:
-streamlit run app.py
-    """, language="bash")
-    
 else:
     # Example Questions
     st.markdown("### 💡 Example Questions")
@@ -259,13 +244,39 @@ else:
     cols = st.columns(3)
     for idx, question in enumerate(example_questions[:3]):
         with cols[idx]:
-            if st.button(question, key=f"example_{idx}"):
-                # Add question to chat
+            if st.button(question, key=f"example_{idx}", use_container_width=True):
+                # Add user question to chat
                 st.session_state.chat_history.append({
                     "role": "user",
                     "content": question
                 })
-                # Trigger answer generation
+                
+                # Generate answer immediately
+                try:
+                    answer = st.session_state.rag_system.answer(
+                        question, 
+                        top_k=top_k, 
+                        verbose=False
+                    )
+                    chunks = st.session_state.rag_system.vector_store.search(
+                        question, 
+                        top_k=top_k
+                    )
+                    
+                    # Add assistant response to chat
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": answer,
+                        "chunks": chunks
+                    })
+                except Exception as e:
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": f"Error generating answer: {str(e)}",
+                        "chunks": []
+                    })
+                
+                # Rerun to show updated chat
                 st.rerun()
     
     st.markdown("---")
