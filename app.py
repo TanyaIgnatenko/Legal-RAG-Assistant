@@ -1,375 +1,354 @@
-"""
-Streamlit Frontend for Legal RAG Demo - Standalone Version
-"""
-
 import streamlit as st
-import os
-from pathlib import Path
-
-from src.rag_system import RAGDemo
-from config import GEMINI_API_KEY
 
 # Page configuration
 st.set_page_config(
     page_title="Legal RAG Assistant",
     page_icon="⚖️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
+# Custom CSS for styling
 st.markdown("""
-    <style>
-    /* Sidebar width */
-    [data-testid="stSidebar"] {
-        min-width: 286px;
-        max-width: 286px;
+<style>
+    /* Hide default Streamlit elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    .stDeployButton {display: none;}
+    
+    /* Main container styling */
+    .main {
+        background: linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%);
     }
     
-    .main {
+    /* Header styling */
+    .header {
+        display: flex;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-bottom: 1px solid #e5e7eb;
+        margin: -1rem -1rem 2rem -1rem;
+    }
+    
+    .header-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+    }
+    
+    .header-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin: 0;
+    }
+    
+    .header-subtitle {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin: 0;
+    }
+    
+    /* Main title */
+    .main-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .main-subtitle {
+        font-size: 1.1rem;
+        color: #6b7280;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto 3rem auto;
+        line-height: 1.6;
+    }
+    
+    /* Card styling */
+    .card {
+        background: white;
+        border-radius: 16px;
         padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        height: 100%;
+        border: 1px solid #f0f0f0;
     }
-    .stButton>button {
-        width: 100%;
-        background-color: #1e40af;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        border: none;
+    
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
     }
-    .stButton>button:hover, .stButton>button:disabled {
-        background-color: #1e3a8a;
-        color: white;
+    
+    .card-icon-blue {
+        background: #e8f0fe;
+        color: #3b82f6;
     }
-    .status-box {
-        padding: 1rem;
-        border-radius: 8px;
-        background-color: #f0fdf4;
-        border-left: 4px solid #22c55e;
-        margin: 1rem 0;
+    
+    .card-icon-purple {
+        background: #f3e8ff;
+        color: #8b5cf6;
     }
-    .chunk-card {
-        background-color: #f8fafc;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 3px solid #3b82f6;
-        margin: 0.5rem 0;
+    
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin-bottom: 0.5rem;
     }
-    .example-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 0.5rem 0;
+    
+    .card-description {
+        font-size: 0.95rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    /* Upload area */
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 50px;
+        padding: 1.5rem;
+        text-align: center;
+        background: #fafafa;
         cursor: pointer;
     }
-    .example-card:hover, .example-card:disabled {
-        color: white;
+    
+    .upload-text {
+        font-size: 0.9rem;
+        color: #374151;
+        font-weight: 500;
     }
-    </style>
+    
+    .upload-subtext {
+        font-size: 0.8rem;
+        color: #9ca3af;
+    }
+    
+    /* Privacy notice */
+    .privacy-notice {
+        text-align: center;
+        color: #9ca3af;
+        font-size: 0.85rem;
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        width: 100%;
+        border-radius: 50px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        background: #f3f4f6;
+        color: #374151;
+        border: none;
+        transition: all 0.2s;
+    }
+    
+    .stButton > button:hover {
+        background: #e5e7eb;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
-if 'rag_system' not in st.session_state:
-    st.session_state.rag_system = None
-if 'chat_history' not in st.session_state:
-    st.session_state.chat_history = []
-if 'document_loaded' not in st.session_state:
-    st.session_state.document_loaded = False
-if 'chunks_count' not in st.session_state:
-    st.session_state.chunks_count = 0
+if "page" not in st.session_state:
+    st.session_state.page = "home"
+if "document" not in st.session_state:
+    st.session_state.document = None
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Initialize RAG system on startup
-if st.session_state.rag_system is None:
-    if not GEMINI_API_KEY:
-        st.error("❌ GEMINI_API_KEY not configured!")
-        st.info("💡 Add your API key in Streamlit Cloud secrets or set environment variable")
-        st.stop()
-    
-    try:
-        with st.spinner("Initializing RAG system..."):
-            st.session_state.rag_system = RAGDemo(gemini_api_key=GEMINI_API_KEY)
-    except Exception as e:
-        st.error(f"❌ Error initializing RAG: {str(e)}")
-        st.stop()
+def navigate_to_chat(doc_name, chunks=26):
+    st.session_state.page = "chat"
+    st.session_state.document = {"name": doc_name, "chunks": chunks}
+    st.session_state.messages = []
 
-# Sidebar
-with st.sidebar:
-    st.title("⚖️ Legal RAG Assistant")
-    st.markdown("---")
-    
-    # Document Source
-    st.subheader("📁 Document Source")
-    
-    doc_source = st.radio(
-        "Select source:",
-        ["GDPR (Pre-loaded)", "Upload Custom Document"],
-        help="Choose between pre-loaded GDPR or upload your own PDF"
-    )
-    
-    if doc_source == "GDPR (Pre-loaded)":
-        if st.button("Load GDPR Document"):
-            if st.session_state.rag_system:
-                gdpr_path = "example_data/gdpr.pdf"
-                
-                if Path(gdpr_path).exists():
-                    with st.spinner("Loading GDPR document..."):
-                        try:
-                            st.session_state.rag_system.setup(gdpr_path)
-                            st.session_state.document_loaded = True
-                            st.session_state.chunks_count = len(
-                                st.session_state.rag_system.vector_store.chunks
-                            )
-                            st.success("✓ GDPR loaded successfully!")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error loading GDPR: {str(e)}")
-                else:
-                    st.error(f"❌ File not found: {gdpr_path}")
-                    st.info("💡 Place gdpr.pdf in example_data/ directory")
-            else:
-                st.warning("RAG system not initialized")
-    
-    else:
-        uploaded_file = st.file_uploader(
-            "Upload PDF Document",
-            type=['pdf'],
-            help="Upload a legal document in PDF format"
-        )
-        
-        if uploaded_file and st.button("Process Document"):
-            if st.session_state.rag_system:
-                with st.spinner("Processing document..."):
-                    try:
-                        # Save uploaded file temporarily
-                        temp_path = f"temp_{uploaded_file.name}"
-                        with open(temp_path, "wb") as f:
-                            f.write(uploaded_file.getbuffer())
-                        
-                        # Process with RAG system
-                        st.session_state.rag_system.setup(temp_path)
-                        st.session_state.document_loaded = True
-                        st.session_state.chunks_count = len(
-                            st.session_state.rag_system.vector_store.chunks
-                        )
-                        
-                        # Clean up
-                        os.remove(temp_path)
-                        st.success(f"✓ {uploaded_file.name} processed!")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error processing document: {str(e)}")
-                        if os.path.exists(temp_path):
-                            os.remove(temp_path)
-            else:
-                st.warning("RAG system not initialized")
-    
-    # Document Status
-    if st.session_state.document_loaded:
-        st.markdown("---")
-        st.subheader("📊 Document Status")
+def navigate_to_home():
+    st.session_state.page = "home"
+    st.session_state.document = None
+    st.session_state.messages = []
+
+# Header
+col1, col2, col3 = st.columns([1, 10, 1])
+with col1:
+    if st.session_state.page == "chat":
+        if st.button("←", key="back"):
+            navigate_to_home()
+            st.rerun()
+
+with col2:
+    if st.session_state.page == "chat" and st.session_state.document:
         st.markdown(f"""
-            <div class="status-box">
-                <strong>✓ Document Loaded</strong><br>
-                <small>{st.session_state.chunks_count} chunks indexed</small>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                ⚖️
             </div>
+            <div>
+                <div style="font-weight: 600; color: #1a1a2e;">Legal RAG Assistant</div>
+                <div style="font-size: 0.85rem; color: #6b7280;">📄 {st.session_state.document['name']} • {st.session_state.document['chunks']} chunks</div>
+            </div>
+        </div>
         """, unsafe_allow_html=True)
-    
-    # Settings
-    st.markdown("---")
-    st.subheader("⚙️ Settings")
-    
-    top_k = st.slider(
-        "Number of chunks to retrieve",
-        min_value=1,
-        max_value=10,
-        value=3,
-        help="How many relevant chunks to retrieve for each question"
-    )
-    
-    show_chunks = st.checkbox(
-        "Show retrieved chunks",
-        value=True,
-        help="Display the source chunks used to generate answers"
-    )
-    
-    st.markdown("---")
-    
-    # Clear Chat Button
-    if st.button("🗑️ Clear Chat History"):
-        st.session_state.chat_history = []
-        st.rerun()
-
-# Main Content
-st.title("💬 Legal Document Q&A")
-
-# Show welcome message if no document loaded
-if not st.session_state.document_loaded:
-    st.info("👈 Please load a document from the sidebar to get started!")
-    
-    st.markdown("### 🎯 How it works:")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
+    else:
         st.markdown("""
-            **1. Upload Document**
-            - Load GDPR or upload your PDF
-            - System processes automatically
-        """)
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                ⚖️
+            </div>
+            <div>
+                <div style="font-weight: 600; color: #1a1a2e;">Legal RAG Assistant</div>
+                <div style="font-size: 0.85rem; color: #6b7280;">AI-powered legal document analysis</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("⚙️", help="Settings")
+
+st.markdown("---")
+
+# Page routing
+if st.session_state.page == "home":
+    # Home Page
+    st.markdown("")
+    st.markdown("")
+    
+    # Main title
+    st.markdown("<h1 style='text-align: center; font-size: 2.5rem; font-weight: 700; color: #1a1a2e;'>Understand Legal Documents with AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: #6b7280; font-size: 1.1rem; max-width: 600px; margin: 0 auto 3rem auto;'>Upload a legal document or use our pre-loaded GDPR file to start asking questions and get AI-powered answers with source citations.</p>", unsafe_allow_html=True)
+    
+    # Cards
+    col1, col2, col3 = st.columns([1, 4, 1])
     
     with col2:
-        st.markdown("""
-            **2. Ask Questions**
-            - Type your legal questions
-            - Get AI-powered answers
-        """)
-    
-    with col3:
-        st.markdown("""
-            **3. Review Sources**
-            - See retrieved document chunks
-            - Verify answer accuracy
-        """)
-    
-else:
-    # Example Questions
-    st.markdown("### 💡 Example Questions")
-    
-    example_questions = [
-        "What is personal data according to GDPR?",
-        "What are the rights of data subjects?",
-        "What are the penalties for GDPR violations?",
-        "What is the legal basis for data processing?",
-        "What are the principles of data protection?"
-    ]
-    
-    cols = st.columns(3)
-    for idx, question in enumerate(example_questions[:3]):
-        with cols[idx]:
-            if st.button(question, key=f"example_{idx}", use_container_width=True):
-                # Add user question to chat
-                st.session_state.chat_history.append({
-                    "role": "user",
-                    "content": question
-                })
-                
-                # Generate answer immediately
-                try:
-                    answer = st.session_state.rag_system.answer(
-                        question, 
-                        top_k=top_k, 
-                        verbose=False
-                    )
-                    chunks = st.session_state.rag_system.vector_store.search(
-                        question, 
-                        top_k=top_k
-                    )
-                    
-                    # Add assistant response to chat
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": answer,
-                        "chunks": chunks
-                    })
-                except Exception as e:
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": f"Error generating answer: {str(e)}",
-                        "chunks": []
-                    })
-                
-                # Rerun to show updated chat
+        card_col1, card_col2 = st.columns(2, gap="large")
+        
+        with card_col1:
+            st.markdown("""
+            <div style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #f0f0f0; height: 300px;">
+                <div style="width: 48px; height: 48px; background: #e8f0fe; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;">
+                    📄
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem;">GDPR Document</h3>
+                <p style="font-size: 0.95rem; color: #6b7280; margin-bottom: 1.5rem; line-height: 1.5;">Pre-loaded General Data Protection Regulation for quick start analysis.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Use GDPR →", key="use_gdpr", use_container_width=True):
+                navigate_to_chat("gdpr.pdf", 26)
+                st.rerun()
+        
+        with card_col2:
+            st.markdown("""
+            <div style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #f0f0f0;">
+                <div style="width: 48px; height: 48px; background: #f3e8ff; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;">
+                    📤
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem;">Upload Document</h3>
+                <p style="font-size: 0.95rem; color: #6b7280; margin-bottom: 1.5rem; line-height: 1.5;">Upload your own PDF or text file to analyze specific legal contracts.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            uploaded_file = st.file_uploader(
+                "Drag & drop or click to browse",
+                type=["pdf", "txt"],
+                help="PDF, TXT up to 10MB",
+                label_visibility="collapsed"
+            )
+            
+            if uploaded_file:
+                navigate_to_chat(uploaded_file.name, 15)
                 st.rerun()
     
-    st.markdown("---")
-    
-    # Chat History
-    if st.session_state.chat_history:
-        st.markdown("### 📜 Conversation")
-        
-        for idx, message in enumerate(st.session_state.chat_history):
-            if message["role"] == "user":
-                with st.chat_message("user"):
-                    st.markdown(message["content"])
-            
-            elif message["role"] == "assistant":
-                with st.chat_message("assistant"):
-                    st.markdown(message["content"])
-                    
-                    # Show retrieved chunks if enabled
-                    if show_chunks and "chunks" in message:
-                        with st.expander(f"📄 View Retrieved Chunks ({len(message['chunks'])})"):
-                            for i, (chunk, distance) in enumerate(message["chunks"], 1):
-                                st.markdown(f"""
-                                    <div class="chunk-card">
-                                        <strong>{i}. {chunk['metadata']}</strong> 
-                                        <small>(distance: {distance:.4f})</small>
-                                        <p style="margin-top: 0.5rem; color: #64748b;">
-                                            {chunk['text'][:300]}...
-                                        </p>
-                                    </div>
-                                """, unsafe_allow_html=True)
-    
-    # Question Input
-    st.markdown("---")
-    
-    # Use chat_input for better UX
-    if prompt := st.chat_input("Ask your question about the document..."):
-        # Add user question to chat
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": prompt
-        })
-        
-        # Display user message immediately
-        with st.chat_message("user"):
-            st.markdown(prompt)
-        
-        # Generate answer
-        with st.chat_message("assistant"):
-            with st.spinner("Generating answer..."):
-                try:
-                    answer = st.session_state.rag_system.answer(
-                        prompt, 
-                        top_k=top_k, 
-                        verbose=False
-                    )
-                    chunks = st.session_state.rag_system.vector_store.search(
-                        prompt, 
-                        top_k=top_k
-                    )
-                    
-                    st.markdown(answer)
-                    
-                    # Add assistant response to chat
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": answer,
-                        "chunks": chunks
-                    })
-                    
-                    # Show chunks if enabled
-                    if show_chunks and chunks:
-                        with st.expander(f"📄 View Retrieved Chunks ({len(chunks)})"):
-                            for i, (chunk, distance) in enumerate(chunks, 1):
-                                st.markdown(f"""
-                                    <div class="chunk-card">
-                                        <strong>{i}. {chunk['metadata']}</strong> 
-                                        <small>(distance: {distance:.4f})</small>
-                                        <p style="margin-top: 0.5rem; color: #64748b;">
-                                            {chunk['text'][:300]}...
-                                        </p>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                    
-                except Exception as e:
-                    st.error(f"Error generating answer: {str(e)}")
-                    st.info("💡 Check if your document is loaded and API key is valid")
+    # Privacy notice
+    st.markdown("")
+    st.markdown("")
+    st.markdown("<p style='text-align: center; color: #9ca3af; font-size: 0.85rem;'>🔒 Your documents are processed locally and never stored on our servers.</p>", unsafe_allow_html=True)
 
-# Footer
-st.markdown("---")
-st.markdown("""
-    <div style="text-align: center; color: #64748b; padding: 1rem;">
-        <small>Legal RAG Assistant | Powered by Gemini & FAISS | Built with Streamlit</small>
-    </div>
-""", unsafe_allow_html=True)
+else:
+    # Chat Page
+    st.markdown("")
+    
+    # Suggested questions (only show if no messages yet)
+    if not st.session_state.messages:
+        col1, col2, col3 = st.columns([1, 3, 1])
+        with col2:
+            st.markdown("""
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #e8f0fe 0%, #dbeafe 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1.5rem;">
+                    🤖
+                </div>
+                <h2 style="font-size: 1.5rem; font-weight: 600; color: #1a1a2e; margin-bottom: 0.5rem;">Ready to analyze gdpr.pdf</h2>
+                <p style="color: #6b7280; font-size: 0.9rem;">✨ Try asking one of these questions:</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Suggested questions
+            suggestions = [
+                "What are the main principles of data processing under GDPR?",
+                "What rights do data subjects have?",
+                "What are the penalties for GDPR violations?",
+                "When is a Data Protection Officer required?",
+                "How long does an organization have to report a data breach?"
+            ]
+            
+            q_col1, q_col2 = st.columns(2)
+            with q_col1:
+                if st.button(suggestions[0], key="q1", use_container_width=True):
+                    st.session_state.messages.append({"role": "user", "content": suggestions[0]})
+                    st.rerun()
+                if st.button(suggestions[2], key="q3", use_container_width=True):
+                    st.session_state.messages.append({"role": "user", "content": suggestions[2]})
+                    st.rerun()
+            
+            with q_col2:
+                if st.button(suggestions[1], key="q2", use_container_width=True):
+                    st.session_state.messages.append({"role": "user", "content": suggestions[1]})
+                    st.rerun()
+                if st.button(suggestions[3], key="q4", use_container_width=True):
+                    st.session_state.messages.append({"role": "user", "content": suggestions[3]})
+                    st.rerun()
+            
+            if st.button(suggestions[4], key="q5", use_container_width=True):
+                st.session_state.messages.append({"role": "user", "content": suggestions[4]})
+                st.rerun()
+    
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.write(message["content"])
+    
+    # Chat input
+    st.markdown("")
+    st.markdown("")
+    
+    if prompt := st.chat_input("Ask a question about the document..."):
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        
+        # Simulated AI response
+        response = f"Based on the {st.session_state.document['name']} document, here's what I found regarding your question:\n\n[This is a placeholder response. In a real implementation, this would be connected to a RAG system that retrieves relevant passages from the document and generates an AI-powered answer with citations.]"
+        
+        st.session_state.messages.append({"role": "assistant", "content": response})
+        st.rerun()
+    
+    # Disclaimer
+    st.markdown("<p style='text-align: center; color: #9ca3af; font-size: 0.75rem; margin-top: 1rem;'>AI responses may vary. Check important information against the source document.</p>", unsafe_allow_html=True)
