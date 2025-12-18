@@ -18,9 +18,8 @@ DEFAULT_TOP_K = 3
 API_HOST = "0.0.0.0"
 API_PORT = 8000
 CORS_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-    "http://localhost:3000",  # Alternative frontend
-    "https://your-frontend-domain.vercel.app",  # Production frontend
+    "https://legal-rag-demo.vercel.app/",  # Production frontend
+    "http://localhost:3000",  # Local frontend
 ]
 
 # File upload settings
