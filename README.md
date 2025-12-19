@@ -1,31 +1,12 @@
-# Legal RAG Demo
+# Legal RAG Assistant
 
-Legal RAG Assistant to help you analyze legal documents more easily and accurately.
+AI-powered legal document analysis to help you understand legal documents more easily and accurately.
 
-[![Live Demo](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://legal-rag-demo.streamlit.app/)
+[![Live Demo](https://img.shields.io/badge/deployed%20on-Vercel-black?style=flat&logo=vercel)](https://legal-rag-demo-tanyaignatenkos-projects.vercel.app/)
 
-## 📌 Goal
+## Goal
 
 Demonstrate understanding of RAG architecture in Legal Tech context with a working prototype.
-
-## 🚀 Quick Start
-
-```bash
-# 1. Clone repository
-git clone https://github.com/yourusername/legal-rag-demo.git
-cd legal-rag-demo
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Set API key in config.toml
-GEMINI_API_KEY="your-key-here"
-
-# 4. Run
-streamlit run app.py
-```
-
-Open http://localhost:8501
 
 ## 🏗️ Architecture
 
@@ -45,23 +26,18 @@ LLM (Gemini) + Context → Generate Answer
 
 ## 🔧 Tech Stack
 
-- **Backend**: Python, PyMuPDF, Sentence Transformers, FAISS
+- **Backend:**
+- Python, FastAPI
+- PyMuPDF, Sentence Transformers, FAISS
+- Google Gemini API
+- Deployed on Railway
+
 - **LLM**: Google Gemini API
-- **Frontend**: Streamlit
 
-## 📁 Structure
-
-```
-legal-rag-demo/
-├── src/
-│   ├── parser.py          # PDF parsing
-│   ├── chunker.py         # Text chunking
-│   ├── vector_store.py    # FAISS search
-│   └── rag_system.py      # RAG pipeline
-├── app.py                 # Streamlit UI
-├── config.py              # Configuration
-└── requirements.txt       # Dependencies
-```
+- **Frontend:**
+- Next.js, React, TypeScript
+- Tailwind CSS
+- Deployed on Vercel
 
 ## 💡 Usage
 
