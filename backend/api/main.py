@@ -4,17 +4,17 @@ from pydantic import BaseModel
 import sys
 import os
 
-# Add parent directory to path to import RAG system
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.rag_system import RAGDemo
 from config import GEMINI_API_KEY, CORS_ORIGINS
 
 app = FastAPI(title="Legal RAG API")
 
+frontend_url_regex = r"https://legal-rag-demo.*\.vercel\.app|http://localhost:3000"
 # CORS middleware - allow frontend to communicate
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,  # Vite default port
+    allow_origin_regex=frontend_url_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
