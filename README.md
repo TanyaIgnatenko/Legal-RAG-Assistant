@@ -2,7 +2,7 @@
 
 AI-powered legal document analysis to help you understand legal documents more easily and accurately.
 
-[![Live Demo](https://img.shields.io/badge/deployed%20on-Vercel-black?style=flat&logo=vercel)](https://legal-rag-demo-tanyaignatenkos-projects.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/deployed%20on-Vercel-black?style=flat&logo=vercel)](https://legal-rag-demo.vercel.app/)
 
 ### 📸 Project Preview
 
@@ -56,7 +56,7 @@ LLM (Gemini) + Context → Generate Answer
 
 ## 🎥 Demo
 
-**Live:** [Try it here](https://legal-rag-demo-tanyaignatenkos-projects.vercel.app)
+**Live:** [Try it here](https://legal-rag-demo.vercel.app/)
 
 ## 📝 License
 
