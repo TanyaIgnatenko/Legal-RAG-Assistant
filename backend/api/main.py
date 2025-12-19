@@ -41,11 +41,8 @@ async def load_gdpr():
     global rag_system
     
     try:
-        print("1")
         rag_system.setup("example_data/gdpr.pdf")
-        print("2")
         chunks = len(rag_system.vector_store.chunks)
-        print("3")
         
         return {
             "success": True,
