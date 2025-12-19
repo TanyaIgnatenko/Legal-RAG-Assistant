@@ -4,9 +4,13 @@ AI-powered legal document analysis to help you understand legal documents more e
 
 [![Live Demo](https://img.shields.io/badge/deployed%20on-Vercel-black?style=flat&logo=vercel)](https://legal-rag-demo-tanyaignatenkos-projects.vercel.app/)
 
-## Goal
+### 📸 Project Preview
 
-Demonstrate understanding of RAG architecture in Legal Tech context with a working prototype.
+![Main Screen](screenshots/main-screen.png)
+
+### Chat Interface
+
+![Chat Screen](screenshots/chat.png)
 
 ## 🏗️ Architecture
 
