@@ -52,7 +52,7 @@ LLM (Gemini) + Context → Generate Answer
 
 ## 🎥 Demo
 
-**Live:** [Try it here](https://legal-rag-demo.streamlit.app/)
+**Live:** [Try it here](https://legal-rag-demo-tanyaignatenkos-projects.vercel.app)
 
 ## 📝 License
 
