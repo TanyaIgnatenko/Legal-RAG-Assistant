@@ -20,7 +20,7 @@ export default function HomePage() {
     setIsLoadingGDPR(true)
     setError(null)
     try {
-      const response = await fetch(`${API_BASE_URL}/api/load-gdpr`, {
+      const response = await fetch(`${API_BASE_URL}/load-gdpr`, {
         method: "POST",
       })
 
@@ -44,7 +44,7 @@ export default function HomePage() {
       const formData = new FormData()
       formData.append("file", file)
 
-      const response = await fetch(`${API_BASE_URL}/api/upload-document`, {
+      const response = await fetch(`${API_BASE_URL}/upload-document`, {
         method: "POST",
         body: formData,
       })
