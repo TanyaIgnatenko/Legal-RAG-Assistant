@@ -92,9 +92,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/50 to-white relative overflow-hidden">
+      {/* Color Spots */}
+      <div className="absolute top-20 left-90 w-96 h-96 bg-blue-200/15 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-150 w-96 h-96 bg-pink-200/15 rounded-full blur-3xl"></div>
+
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
             <Scale className="w-6 h-6 text-blue-600" />
@@ -107,7 +111,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-20">
+      <main className="max-w-4xl mx-auto px-6 py-20 relative z-10">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-900 mb-4 text-balance">Understand Legal Documents with AI</h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto text-balance">
