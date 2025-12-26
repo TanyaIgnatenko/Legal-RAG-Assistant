@@ -114,9 +114,9 @@ export default function ChatPage() {
             <ArrowLeft className="w-5 h-5 text-gray-500" />
           </button>
           <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-            <Scale className="w-6 h-6 text-blue-600" />
-          </div>
+            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+              <Scale className="w-6 h-6 text-blue-600" />
+            </div>
             <div>
               <h1 className="font-semibold text-gray-900">Legal RAG Assistant</h1>
               <p className="text-sm text-gray-500">
@@ -146,7 +146,7 @@ export default function ChatPage() {
       </header>
 
       {/* Chat Area */}
-      <main className="flex-1 overflow-y-auto px-6 py-8">
+      <main className="flex-1 overflow-y-auto px-6 pt-36">
         <div className="max-w-3xl mx-auto">
           {/* Welcome Section - Always visible */}
           <div className="text-center mb-8">
