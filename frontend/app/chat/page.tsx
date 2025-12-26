@@ -13,7 +13,7 @@ interface Message {
   chunks?: Array<{
     metadata: Record<string, unknown>
     text: string
-    distance: number
+    score: number
   }>
 }
 
@@ -240,9 +240,9 @@ export default function ChatPage() {
                                 className="text-gray-500 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100"
                               >
                                 <p className="line-clamp-4">{chunk.text}</p>
-                                {chunk.distance !== undefined && (
+                                {chunk.score !== undefined && (
                                   <p className="text-gray-400 text-xs mt-2">
-                                    Relevance: {((1 - chunk.distance) * 100).toFixed(1)}%
+                                    Relevance: {chunk.score.toFixed(1)}%
                                   </p>
                                 )}
                               </li>

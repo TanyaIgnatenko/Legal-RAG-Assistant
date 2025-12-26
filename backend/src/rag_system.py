@@ -76,8 +76,8 @@ class RAGDemo:
         
         if verbose:
             print("Found relevant fragments:\n")
-            for i, (chunk, dist) in enumerate(results, 1):
-                print(f"{i}. {chunk['metadata']} (distance: {dist:.4f})")
+            for i, (chunk, score) in enumerate(results, 1):
+                print(f"{i}. {chunk['metadata']} (score: {score:.4f})")
                 print(f"   {chunk['text'][:200]}...\n")
         
         context = "\n\n".join([
