@@ -148,8 +148,6 @@ export default function ChatPage() {
                   </svg>
                   {docName}
                 </span>
-                <span className="mx-2 text-gray-300">•</span>
-                <span>{chunksCount} chunks</span>
               </p>
             </div>
           </div>
