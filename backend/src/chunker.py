@@ -22,11 +22,12 @@ class LegalChunker:
         chunks = []
         
         # Patterns for finding chapters and articles
-        chapter_pattern = r'(Chapter\s+[IVXLCDM]+|CHAPTER\s+[IVXLCDM]+)'
-        article_pattern = r'(Article\s+\d+|ARTICLE\s+\d+)'
+        chapter_pattern = r'(?:CHAPTER)\s+(?:[IVXLCDM]+|\d+)(?:\s*[-:.]?\s*[^\n]*)?'
+        # Article pattern - MUST be at start of line to avoid false matches in text
+        article_pattern = r'(?:^|\n)\s*(?:Article)\s+\d+\s\n'
         
         # Find all chapters
-        chapter_matches = list(re.finditer(chapter_pattern, text, re.IGNORECASE))
+        chapter_matches = list(re.finditer(chapter_pattern, text))
         
         for i, chapter_match in enumerate(chapter_matches):
             chapter_start = chapter_match.start()
