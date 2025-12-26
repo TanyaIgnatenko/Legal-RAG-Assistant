@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { ArrowLeft, Settings, Send, Bot, Sparkles, User, ChevronDown, ChevronRight } from "lucide-react"
+import { ArrowLeft, Settings, Send, Bot, Sparkles, User, ChevronDown, ChevronRight, Scale } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 interface Message {
@@ -115,17 +115,9 @@ export default function ChatPage() {
             <ArrowLeft className="w-5 h-5 text-gray-500" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-600">
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+            <Scale className="w-6 h-6 text-blue-600" />
+          </div>
             <div>
               <h1 className="font-semibold text-gray-900">Legal RAG Assistant</h1>
               <p className="text-sm text-gray-500">

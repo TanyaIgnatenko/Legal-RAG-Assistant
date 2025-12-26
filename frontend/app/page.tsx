@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useRouter } from "next/navigation"
-import { FileText, Upload, Lock, Settings } from "lucide-react"
+import { FileText, Upload, Lock, Settings, Scale } from "lucide-react"
 import { useState, useRef } from "react"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
@@ -96,16 +96,8 @@ export default function HomePage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-blue-600">
-              <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+            <Scale className="w-6 h-6 text-blue-600" />
           </div>
           <div>
             <h1 className="font-semibold text-gray-900">Legal RAG Assistant</h1>
