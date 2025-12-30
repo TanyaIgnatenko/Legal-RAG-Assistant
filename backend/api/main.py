@@ -90,32 +90,14 @@ async def ask_question(request: QuestionRequest):
         raise HTTPException(status_code=400, detail="No document loaded")
     
     try:
-        # Get answer
-        answer = rag_system.answer(
+        result = rag_system.answer(
             request.question,
             top_k=request.top_k,
-            verbose=False
         )
-        
-        # Get chunks
-        chunks = rag_system.vector_store.search(
-            request.question,
-            top_k=request.top_k
-        )
-        
-        # Format chunks for response
-        formatted_chunks = [
-            {
-                "metadata": chunk["metadata"],
-                "text": chunk["text"],
-                "distance": float(distance)
-            }
-            for chunk, distance in chunks
-        ]
-        
+
         return {
-            "answer": answer,
-            "chunks": formatted_chunks
+            "answer": result["answer"],
+            "chunks": result["chunks"]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
