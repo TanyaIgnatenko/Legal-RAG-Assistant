@@ -1,7 +1,6 @@
 """RAG system implementation for legal document Q&A"""
 
 import google.generativeai as genai
-from typing import List
 from .parser import PDFParser
 from .chunker import LegalChunker
 from .vector_store import FaissVectorStore

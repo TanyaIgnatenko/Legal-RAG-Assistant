@@ -137,15 +137,17 @@ class FaissVectorStore:
             query_embedding.astype('float32'), 
             top_k
         )
-
-        print("scores", scores)
         
         results = []
         for idx, score in zip(indices[0], scores[0]):
+            # Skip invalid indices (FAISS uses -1 for padding when fewer results than top_k)
+            if idx == -1:
+                continue
+
             # Convert cosine similarity (-1 to 1) to percentage (0-100%)
             # For text similarity, we typically see values between 0 and 1
             # So we just multiply by 100
             similarity_percentage = max(0.0, float(score) * 100)
             results.append((self.chunks[idx], similarity_percentage))
-        
+
         return results

@@ -8,7 +8,7 @@ class LegalChunker:
     """Hierarchical chunking for legal documents"""
     
     @staticmethod
-    def chunk_gdpr(text: str, min_chunk_size: int = 100) -> List[Dict[str, str]]:
+    def chunk_gdpr(text: str) -> List[Dict[str, str]]:
         """
         Splits GDPR text into chunks by chapters and articles
         
@@ -45,32 +45,31 @@ class LegalChunker:
                     article_text = chapter_text[article_start:article_end].strip()
                     article_name = article_match.group(0)
                     
-                    if len(article_text) > min_chunk_size:
-                        chunks.append({
-                            'chapter': chapter_name,
-                            'article': article_name,
-                            'text': article_text,
-                            'metadata': f"{chapter_name} - {article_name}"
-                        })
-            else:
-                if len(chapter_text.strip()) > min_chunk_size:
                     chunks.append({
                         'chapter': chapter_name,
-                        'article': 'N/A',
-                        'text': chapter_text.strip(),
-                        'metadata': chapter_name
+                        'article': article_name,
+                        'text': article_text,
+                        'metadata': f"{chapter_name} - {article_name}"
                     })
+            else:
+                chapter_text.strip()
+                chunks.append({
+                    'chapter': chapter_name,
+                    'article': 'N/A',
+                    'text': chapter_text.strip(),
+                    'metadata': chapter_name
+                })
         
         # If no chapters found, split text into paragraphs
         if not chunks:
             paragraphs = text.split('\n\n')
             for i, para in enumerate(paragraphs):
-                if len(para.strip()) > min_chunk_size:
-                    chunks.append({
-                        'chapter': 'N/A',
-                        'article': f'Section {i+1}',
-                        'text': para.strip(),
-                        'metadata': f'Section {i+1}'
-                    })
+                para.strip()
+                chunks.append({
+                    'chapter': 'N/A',
+                    'article': f'Section {i+1}',
+                    'text': para.strip(),
+                    'metadata': f'Section {i+1}'
+                })
         
         return chunks
