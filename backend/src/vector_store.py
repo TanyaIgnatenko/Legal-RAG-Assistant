@@ -11,7 +11,7 @@ import faiss
 class FaissVectorStore:
     """Vector store based on FAISS"""
     
-    def __init__(self, model_name: str = 'all-MiniLM-L6-v2'):
+    def __init__(self, model_name: str = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'):
         """
         Initialize vector store
         

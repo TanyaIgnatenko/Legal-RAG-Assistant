@@ -24,7 +24,7 @@ from src.vector_store import FaissVectorStore
 def precompute_embeddings(
     pdf_path: str = "example_data/gdpr.pdf",
     output_path: str = "example_data/gdpr_embeddings.pkl",
-    model_name: str = 'all-MiniLM-L6-v2'
+    model_name: str = 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2'
 ):
     """
     Precompute and save embeddings for GDPR document
