@@ -13,3 +13,7 @@ pydantic>=2.5.0
 
 # Utilities
 python-dotenv>=1.0.0
+
+langchain
+langchain-google-genai
+langchain-community
