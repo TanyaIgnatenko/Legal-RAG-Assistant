@@ -14,7 +14,7 @@ frontend_url_regex = r"https://legal-rag-demo.*\.vercel\.app|http://localhost:30
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
