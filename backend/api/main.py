@@ -13,7 +13,7 @@ app = FastAPI(title="Legal RAG API")
 frontend_url_regex = r"https://legal-rag-demo.*\.vercel\.app|http://localhost:3000"
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=frontend_url_regex,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
