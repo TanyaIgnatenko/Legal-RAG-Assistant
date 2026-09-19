@@ -29,7 +29,7 @@ export default function HomePage() {
       }
 
       const data = await response.json()
-      router.push(`/chat?doc=gdpr.pdf&chunks=${data.chunks}`)
+      router.push(`/chat?doc=${encodeURIComponent(data.document)}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load document")
     } finally {
@@ -54,7 +54,7 @@ export default function HomePage() {
       }
 
       const data = await response.json()
-      router.push(`/chat?doc=${encodeURIComponent(data.document)}&chunks=${data.chunks}`)
+      router.push(`/chat?doc=${encodeURIComponent(data.document)}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload document")
     } finally {
