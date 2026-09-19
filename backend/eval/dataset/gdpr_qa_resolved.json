@@ -1,0 +1,537 @@
+[
+  {
+    "id": "q001",
+    "question": "At what point does a record a company keeps about one of its customers fall under these rules at all?",
+    "required_articles": [
+      "Article 4"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "As soon as the record relates to an identified or identifiable living individual. Someone is identifiable if they can be singled out directly or indirectly, for example by a name, an ID number, location data or an online identifier.",
+    "qtype": "factual",
+    "chapter": "I",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "means any information relating to an identified or identifiable natural person"
+    ],
+    "evidence_spans": [
+      [
+        165112,
+        174023
+      ]
+    ],
+    "quote_spans": [
+      [
+        165195,
+        165273
+      ]
+    ]
+  },
+  {
+    "id": "q002",
+    "question": "How old does a young person have to be before they can sign up to an online service on their own, without a parent agreeing for them?",
+    "required_articles": [
+      "Article 8"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "16. Below that age a holder of parental responsibility must give or authorise consent, although a Member State may set a lower threshold, never below 13.",
+    "qtype": "factual",
+    "chapter": "II",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "the processing of the personal data of a child shall be lawful where the child is at least 16 years old"
+    ],
+    "evidence_spans": [
+      [
+        181922,
+        183019
+      ]
+    ],
+    "quote_spans": [
+      [
+        182142,
+        182245
+      ]
+    ]
+  },
+  {
+    "id": "q003",
+    "question": "Once the reason for gathering someone's details has gone away, may a business simply hold on to them forever?",
+    "required_articles": [
+      "Article 5"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "No. Records must be kept in an identifiable form no longer than necessary for the purposes they were processed for. Longer retention is allowed only for archiving in the public interest, scientific or historical research or statistical purposes, with appropriate safeguards.",
+    "qtype": "factual",
+    "chapter": "II",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "kept in a form which permits identification of data subjects for no longer than is necessary"
+    ],
+    "evidence_spans": [
+      [
+        174049,
+        176437
+      ]
+    ],
+    "quote_spans": [
+      [
+        175417,
+        175509
+      ]
+    ]
+  },
+  {
+    "id": "q004",
+    "question": "Can a member of the public force a firm to wipe what it holds on them?",
+    "required_articles": [
+      "Article 17"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "Yes, on specific grounds, such as the data no longer being necessary, consent being withdrawn, a successful objection, or unlawful processing. The controller must then erase without undue delay, subject to exemptions such as freedom of expression or legal obligations.",
+    "qtype": "factual",
+    "chapter": "III",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "the right to obtain from the controller the erasure of personal data concerning him or her without undue delay"
+    ],
+    "evidence_spans": [
+      [
+        203611,
+        206319
+      ]
+    ],
+    "quote_spans": [
+      [
+        203698,
+        203809
+      ]
+    ]
+  },
+  {
+    "id": "q005",
+    "question": "Am I able to pick up everything one provider holds on me and hand it over to a rival service?",
+    "required_articles": [
+      "Article 20"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "Yes, where processing rests on consent or a contract and is automated. The data must be supplied in a structured, commonly used, machine-readable format, and may be sent directly between providers where technically feasible.",
+    "qtype": "factual",
+    "chapter": "III",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "in a structured, commonly used and machine-readable format"
+    ],
+    "evidence_spans": [
+      [
+        208346,
+        209664
+      ]
+    ],
+    "quote_spans": [
+      [
+        208525,
+        208583
+      ]
+    ]
+  },
+  {
+    "id": "q006",
+    "question": "How fast does a firm have to raise the alarm with the regulator once it realises its systems were compromised?",
+    "required_articles": [
+      "Article 33"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "Without undue delay and where feasible within 72 hours of becoming aware. A later notification must explain the delay. Notification is unnecessary if the breach is unlikely to risk individuals' rights and freedoms.",
+    "qtype": "factual",
+    "chapter": "IV",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "not later than 72 hours after having become aware of it"
+    ],
+    "evidence_spans": [
+      [
+        231961,
+        233786
+      ]
+    ],
+    "quote_spans": [
+      [
+        232146,
+        232202
+      ]
+    ]
+  },
+  {
+    "id": "q007",
+    "question": "When is a business required to put someone in charge of privacy matters internally?",
+    "required_articles": [
+      "Article 37"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "When it is a public authority or body, when its core activities require regular and systematic monitoring of individuals on a large scale, or when its core activities involve large-scale processing of special categories of data or of criminal conviction data.",
+    "qtype": "factual",
+    "chapter": "IV",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "shall designate a data protection officer in any case where"
+    ],
+    "evidence_spans": [
+      [
+        242916,
+        244972
+      ]
+    ],
+    "quote_spans": [
+      [
+        243008,
+        243067
+      ]
+    ]
+  },
+  {
+    "id": "q008",
+    "question": "Who gets to judge whether a country beyond the bloc is safe enough to send records to?",
+    "required_articles": [
+      "Article 45"
+    ],
+    "acceptable_articles": [
+      "Article 44"
+    ],
+    "reference_answer": "The European Commission, by way of an adequacy decision. Where such a decision exists no further specific authorisation is needed for the transfer.",
+    "qtype": "factual",
+    "chapter": "V",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "where the Commission has decided that the third country"
+    ],
+    "evidence_spans": [
+      [
+        264456,
+        269650
+      ]
+    ],
+    "quote_spans": [
+      [
+        264614,
+        264670
+      ]
+    ]
+  },
+  {
+    "id": "q009",
+    "question": "What is the shortest stretch someone may serve on a national watchdog before their seat comes up again?",
+    "required_articles": [
+      "Article 54"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "Four years. Member States must fix a term of no less than four years, with a possible exception for part of the first appointment after 24 May 2016 to allow staggered appointments.",
+    "qtype": "factual",
+    "chapter": "VI",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "the duration of the term of the member or members of each supervisory authority of no less than four years"
+    ],
+    "evidence_spans": [
+      [
+        286922,
+        288724
+      ]
+    ],
+    "quote_spans": [
+      [
+        287413,
+        287519
+      ]
+    ]
+  },
+  {
+    "id": "q010",
+    "question": "What is the heaviest financial penalty a watchdog is allowed to hand down?",
+    "required_articles": [
+      "Article 83"
+    ],
+    "acceptable_articles": [
+      "Article 84"
+    ],
+    "reference_answer": "Up to 20 000 000 EUR, or for an undertaking up to 4% of total worldwide annual turnover of the preceding financial year, whichever is higher. A lower tier of 10 000 000 EUR or 2% applies to other infringements.",
+    "qtype": "factual",
+    "chapter": "VIII",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "20 000 000 EUR, or in the case of an undertaking, up to 4 % of the total worldwide annual turnover"
+    ],
+    "evidence_spans": [
+      [
+        341298,
+        346954
+      ]
+    ],
+    "quote_spans": [
+      [
+        344622,
+        344720
+      ]
+    ]
+  },
+  {
+    "id": "q011",
+    "question": "Are individual countries free to layer their own additional requirements on top when it comes to staff records at work?",
+    "required_articles": [
+      "Article 88"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "Yes. Member States may adopt more specific rules by law or by collective agreement for employees' data in the employment context, provided those rules include suitable safeguards for dignity, legitimate interests and fundamental rights.",
+    "qtype": "factual",
+    "chapter": "IX",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "Member States may, by law or by collective agreements, provide for more specific rules"
+    ],
+    "evidence_spans": [
+      [
+        349822,
+        351235
+      ]
+    ],
+    "quote_spans": [
+      [
+        349878,
+        349964
+      ]
+    ]
+  },
+  {
+    "id": "q012",
+    "question": "From which day did organisations actually have to start obeying this?",
+    "required_articles": [
+      "Article 99"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "25 May 2018. The Regulation entered into force on the twentieth day after publication in the Official Journal but only became applicable from that date.",
+    "qtype": "factual",
+    "chapter": "XI",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "It shall apply from 25 May 2018"
+    ],
+    "evidence_spans": [
+      [
+        360243,
+        360847
+      ]
+    ],
+    "quote_spans": [
+      [
+        360438,
+        360469
+      ]
+    ]
+  },
+  {
+    "id": "q013",
+    "question": "After systems are compromised, how does telling the authorities differ from warning the people affected?",
+    "required_articles": [
+      "Article 33",
+      "Article 34"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "The regulator must be told whenever a breach is likely to pose a risk, without undue delay and where feasible within 72 hours. Affected individuals must be told only where the risk to their rights and freedoms is high, and then without undue delay; that communication can be avoided by encryption, by later measures removing the high risk, or by a public announcement where individual contact is disproportionate.",
+    "qtype": "multi_hop",
+    "chapter": "IV",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "not later than 72 hours after having become aware of it",
+      "likely to result in a high risk to the rights and freedoms of natural persons, the controller shall communicate the personal data breach to the data subject"
+    ],
+    "evidence_spans": [
+      [
+        231961,
+        233786
+      ],
+      [
+        233788,
+        235657
+      ]
+    ],
+    "quote_spans": [
+      [
+        232146,
+        232202
+      ],
+      [
+        233897,
+        234054
+      ]
+    ]
+  },
+  {
+    "id": "q014",
+    "question": "If someone believes a company mishandled their details, can they go to court directly or must they raise it with the watchdog first?",
+    "required_articles": [
+      "Article 77",
+      "Article 79"
+    ],
+    "acceptable_articles": [
+      "Article 78",
+      "Article 82"
+    ],
+    "reference_answer": "Either route is open and neither blocks the other. A person may lodge a complaint with a supervisory authority, typically where they live, work, or where the infringement occurred, and separately has a right to an effective judicial remedy against the controller or processor before the courts of the Member State where it is established or where the person resides.",
+    "qtype": "multi_hop",
+    "chapter": "VIII",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "every data subject shall have the right to lodge a complaint with a supervisory authority",
+      "each data subject shall have the right to an effective judicial remedy"
+    ],
+    "evidence_spans": [
+      [
+        334352,
+        335040
+      ],
+      [
+        336155,
+        337377
+      ]
+    ],
+    "quote_spans": [
+      [
+        334490,
+        334580
+      ],
+      [
+        336412,
+        336482
+      ]
+    ]
+  },
+  {
+    "id": "q015",
+    "question": "When watchdogs in different countries cannot agree on a case that spans borders, how is the deadlock broken?",
+    "required_articles": [
+      "Article 60",
+      "Article 65"
+    ],
+    "acceptable_articles": [
+      "Article 56",
+      "Article 63",
+      "Article 64"
+    ],
+    "reference_answer": "The lead authority must first try to reach consensus with the other authorities concerned, exchanging information and submitting a draft decision. If an authority raises a relevant and reasoned objection that the lead authority does not follow, the European Data Protection Board adopts a binding decision settling the matter.",
+    "qtype": "multi_hop",
+    "chapter": "VII",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "The lead supervisory authority shall cooperate with the other supervisory authorities concerned",
+      "the Board shall adopt a binding decision in the following cases"
+    ],
+    "evidence_spans": [
+      [
+        301116,
+        305864
+      ],
+      [
+        316589,
+        320175
+      ]
+    ],
+    "quote_spans": [
+      [
+        301232,
+        301327
+      ],
+      [
+        316735,
+        316799
+      ]
+    ]
+  },
+  {
+    "id": "q016",
+    "question": "What keeps the Commission's power to issue further measures in check, and which body sits alongside it when it does?",
+    "required_articles": [
+      "Article 92",
+      "Article 93"
+    ],
+    "acceptable_articles": [],
+    "reference_answer": "The delegation is granted for an indeterminate period from 24 May 2016 but can be revoked at any time by the Parliament or the Council, and an adopted act only takes effect if neither objects within the stated period. Separately, a committee within the meaning of Regulation (EU) No 182/2011 assists the Commission.",
+    "qtype": "multi_hop",
+    "chapter": "X",
+    "source": "gdpr-info.eu",
+    "proof": [
+      "The power to adopt delegated acts is conferred on the Commission subject to the conditions laid down in this Article",
+      "The Commission shall be assisted by a committee"
+    ],
+    "evidence_spans": [
+      [
+        355066,
+        356609
+      ],
+      [
+        356611,
+        357026
+      ]
+    ],
+    "quote_spans": [
+      [
+        355109,
+        355226
+      ],
+      [
+        356647,
+        356694
+      ]
+    ]
+  },
+  {
+    "id": "q017",
+    "question": "Which specific encryption algorithm and key length must a controller use to secure personal data?",
+    "required_articles": [],
+    "acceptable_articles": [],
+    "reference_answer": "The Regulation does not name any algorithm or key length. It requires technical and organisational measures appropriate to the risk and mentions encryption only as an example, leaving the choice to the controller.",
+    "qtype": "unanswerable",
+    "chapter": "N/A",
+    "source": "gdpr-info.eu",
+    "proof": [],
+    "evidence_spans": [],
+    "quote_spans": []
+  },
+  {
+    "id": "q018",
+    "question": "How many staff must each national supervisory authority employ?",
+    "required_articles": [],
+    "acceptable_articles": [],
+    "reference_answer": "The Regulation sets no headcount. It requires each Member State to give its supervisory authority the human, technical and financial resources needed to perform its tasks, without specifying a number.",
+    "qtype": "unanswerable",
+    "chapter": "N/A",
+    "source": "gdpr-info.eu",
+    "proof": [],
+    "evidence_spans": [],
+    "quote_spans": []
+  },
+  {
+    "id": "q019",
+    "question": "What minimum capital adequacy ratio must banks maintain under the Basel III framework?",
+    "required_articles": [],
+    "acceptable_articles": [],
+    "reference_answer": "Out of scope. Basel III banking capital requirements are not addressed by this document.",
+    "qtype": "out_of_scope",
+    "chapter": "N/A",
+    "source": "gdpr-info.eu",
+    "proof": [],
+    "evidence_spans": [],
+    "quote_spans": []
+  },
+  {
+    "id": "q020",
+    "question": "How do I renew an expired driving licence in Germany?",
+    "required_articles": [],
+    "acceptable_articles": [],
+    "reference_answer": "Out of scope. Driving licence administration is not addressed by this document.",
+    "qtype": "out_of_scope",
+    "chapter": "N/A",
+    "source": "gdpr-info.eu",
+    "proof": [],
+    "evidence_spans": [],
+    "quote_spans": []
+  }
+]
