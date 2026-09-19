@@ -96,7 +96,7 @@ async def ask_question(request: QuestionRequest):
         raise HTTPException(status_code=400, detail="No document loaded")
 
     try:
-        result = rag_system.answer(request.question)
+        result = rag_system.answer(request.question, top_k=request.top_k)
         return {"answer": result["answer"], "chunks": result["chunks"]}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

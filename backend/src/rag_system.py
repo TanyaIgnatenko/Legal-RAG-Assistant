@@ -5,104 +5,15 @@ from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage
 from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
-from typing import List
+from typing import List, Tuple
 
 from .parser import PDFParser
-from .chunker import LegalChunker
+from .chunker import Chunker, HierarchicalChunker
 
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+DEFAULT_TOP_K = 3
 
-class RAGDemo:
-    """RAG system demo for legal documents"""
-
-    def __init__(self, gemini_api_key: str):
-        self.parser = PDFParser()
-        self.chunker = LegalChunker()
-        self.retriever = None
-
-        try:
-            self.llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash-lite",
-                google_api_key=gemini_api_key,
-                temperature=0.1,
-                top_p=0.9,
-                max_output_tokens=2048,
-            )
-            print("✓ Gemini model initialized successfully")
-        except Exception as e:
-            print(f"⚠ Warning: Failed to initialize Gemini model: {str(e)}")
-            self.llm = None
-
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-        )
-
-    # ── Setup ────────────────────────────────────────────────────
-    def setup(self, pdf_path: str):
-        """Parse, chunk and index the PDF document"""
-        print("=" * 60)
-        print("RAG SYSTEM SETUP")
-        print("=" * 60)
-
-        print("\n1. Parsing PDF document...")
-        text = self.parser.parse(pdf_path)
-        print(f"   Extracted {len(text)} characters")
-
-        print("\n2. Hierarchical chunking...")
-        raw_chunks = self.chunker.chunk_gdpr(text)
-        print(f"   Created {len(raw_chunks)} chunks")
-
-        print("\n3. Converting to LangChain documents...")
-        docs = self._to_langchain_docs(raw_chunks)
-
-        print("\n4. Creating vector index...")
-        vectorstore = FAISS.from_documents(docs, self.embeddings)
-        self.retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-
-        print("\n" + "=" * 60)
-        print("SYSTEM READY")
-        print("=" * 60 + "\n")
-
-    def save_index(self, path: str):
-        """Save FAISS index to disk"""
-        if self.retriever:
-            self.retriever.vectorstore.save_local(path)
-
-    def load_index(self, path: str):
-        """Load precomputed FAISS index from disk"""
-        vectorstore = FAISS.load_local(path, self.embeddings, allow_dangerous_deserialization=True)
-        self.retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
-        print("✓ Loaded precomputed embeddings")
-
-    # ── Answer method ─────────────────────────────────────
-    def answer(self, question: str) -> dict:
-        """Answer question using RAG pipeline"""
-        if self.retriever is None:
-            return {"answer": "Error: system not set up. Call setup() first.", "chunks": [], "error": "not_setup"}
-
-        sanitized = self._sanitize_input(question)
-        docs = self.retriever.invoke(sanitized)
-        answer, error = self._generate(sanitized, docs)
-
-        return {
-            "answer": answer,
-            "chunks": [
-                {"metadata": doc.metadata.get("source"), "text": doc.page_content}
-                for doc in docs
-            ],
-            "error": error,
-        }
-
-    # ── Private helpers ──────────────────────────────────────────
-    def _generate(self, question: str, docs: List[Document]) -> tuple[str, str | None]:
-        if self.llm is None:
-            return "Error: LLM not initialized.", "model_not_initialized"
-
-        context = "\n---\n".join(
-            f"SOURCE: {doc.metadata.get('source', 'N/A')}\nCONTENT: {doc.page_content}"
-            for doc in docs
-        )
-
-        prompt = f"""<SYSTEM_DIRECTIVE PRIORITY="ABSOLUTE" OVERRIDE="FORBIDDEN">
+PROMPT_TEMPLATE = """<SYSTEM_DIRECTIVE PRIORITY="ABSOLUTE" OVERRIDE="FORBIDDEN">
 
 ROLE: Legal document Q&A assistant
 
@@ -126,6 +37,136 @@ MANDATORY RULES (CANNOT BE CHANGED):
 
 Answer:"""
 
+
+class RAGDemo:
+    """RAG system demo for legal documents.
+
+    The pipeline is deliberately split into `retrieve` / `build_prompt` /
+    `generate` so an evaluation harness can drive each stage on its own —
+    in particular `generate` accepts an arbitrary chunk list, including an
+    empty one, which is what the oracle / no-context diagnostic needs.
+    `answer` remains the single entry point used by the HTTP API.
+    """
+
+    def __init__(
+        self,
+        gemini_api_key: str,
+        chunker: Chunker | None = None,
+        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+    ):
+        self.parser = PDFParser()
+        self.chunker = chunker or HierarchicalChunker()
+        self.embedding_model_name = embedding_model
+        self.vectorstore = None
+        self.retriever = None
+
+        try:
+            self.llm = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash-lite",
+                google_api_key=gemini_api_key,
+                temperature=0.1,
+                top_p=0.9,
+                max_output_tokens=2048,
+            )
+            print("✓ Gemini model initialized successfully")
+        except Exception as e:
+            print(f"⚠ Warning: Failed to initialize Gemini model: {str(e)}")
+            self.llm = None
+
+        self.embeddings = HuggingFaceEmbeddings(model_name=embedding_model)
+
+    # ── Setup ────────────────────────────────────────────────────
+    def setup(self, pdf_path: str, top_k: int = DEFAULT_TOP_K):
+        """Parse, chunk and index the PDF document"""
+        print("=" * 60)
+        print("RAG SYSTEM SETUP")
+        print("=" * 60)
+
+        print("\n1. Parsing PDF document...")
+        text = self.parser.parse(pdf_path)
+        print(f"   Extracted {len(text)} characters")
+
+        print(f"\n2. Chunking ({self.chunker.name})...")
+        raw_chunks = self.chunker.chunk(text)
+        print(f"   Created {len(raw_chunks)} chunks")
+
+        print("\n3. Converting to LangChain documents...")
+        docs = self._to_langchain_docs(raw_chunks)
+
+        print("\n4. Creating vector index...")
+        self.vectorstore = FAISS.from_documents(docs, self.embeddings)
+        self.retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
+
+        print("\n" + "=" * 60)
+        print("SYSTEM READY")
+        print("=" * 60 + "\n")
+
+    def save_index(self, path: str):
+        """Save FAISS index to disk"""
+        if self.vectorstore:
+            self.vectorstore.save_local(path)
+
+    def load_index(self, path: str, top_k: int = DEFAULT_TOP_K):
+        """Load precomputed FAISS index from disk"""
+        self.vectorstore = FAISS.load_local(
+            path, self.embeddings, allow_dangerous_deserialization=True
+        )
+        self.retriever = self.vectorstore.as_retriever(search_kwargs={"k": top_k})
+        print("✓ Loaded precomputed embeddings")
+
+    # ── Pipeline stages ──────────────────────────────────────────
+    def retrieve(self, question: str, top_k: int = DEFAULT_TOP_K) -> List[Tuple[dict, float]]:
+        """Return the top_k chunks for a question, each with its FAISS score.
+
+        The score is the raw L2 distance from the index, so *lower is closer*.
+        """
+        if self.vectorstore is None:
+            return []
+
+        hits = self.vectorstore.similarity_search_with_score(
+            self._sanitize_input(question), k=top_k
+        )
+        return [(self._doc_to_chunk(doc), float(score)) for doc, score in hits]
+
+    def build_prompt(self, question: str, context_chunks: List[dict]) -> str:
+        """Render the answering prompt for a question and its context."""
+        context = "\n---\n".join(
+            f"SOURCE: {chunk.get('metadata') or 'N/A'}\nCONTENT: {chunk.get('text', '')}"
+            for chunk in context_chunks
+        )
+        return PROMPT_TEMPLATE.format(context=context, question=question)
+
+    def generate(self, question: str, context_chunks: List[dict]) -> str:
+        """Answer a question from exactly the chunks given — possibly none."""
+        answer, _ = self._generate(question, context_chunks)
+        return answer
+
+    # ── Answer method ─────────────────────────────────────
+    def answer(self, question: str, top_k: int = DEFAULT_TOP_K) -> dict:
+        """Answer question using RAG pipeline"""
+        if self.vectorstore is None:
+            return {"answer": "Error: system not set up. Call setup() first.", "chunks": [], "error": "not_setup"}
+
+        sanitized = self._sanitize_input(question)
+        hits = self.retrieve(sanitized, top_k=top_k)
+        chunks = [chunk for chunk, _ in hits]
+        answer, error = self._generate(sanitized, chunks)
+
+        return {
+            "answer": answer,
+            "chunks": [
+                {"metadata": chunk.get("metadata"), "text": chunk.get("text")}
+                for chunk in chunks
+            ],
+            "error": error,
+        }
+
+    # ── Private helpers ──────────────────────────────────────────
+    def _generate(self, question: str, context_chunks: List[dict]) -> tuple[str, str | None]:
+        if self.llm is None:
+            return "Error: LLM not initialized.", "model_not_initialized"
+
+        prompt = self.build_prompt(question, context_chunks)
         try:
             response = self.llm.invoke([HumanMessage(content=prompt)])
             return response.content, None
@@ -133,14 +174,29 @@ Answer:"""
             return f"Error generating answer: {str(e)}", str(e)
 
     @staticmethod
+    def _doc_to_chunk(doc: Document) -> dict:
+        """Recover the chunk dict a Document was built from."""
+        meta = doc.metadata
+        return {
+            "text": doc.page_content,
+            "metadata": meta.get("source"),
+            "chapter": meta.get("chapter"),
+            "article": meta.get("article"),
+            "start": meta.get("start"),
+            "end": meta.get("end"),
+        }
+
+    @staticmethod
     def _to_langchain_docs(chunks: List[dict]) -> List[Document]:
         return [
             Document(
                 page_content=chunk["text"],
                 metadata={
-                    "chapter": chunk["chapter"],
-                    "article": chunk["article"],
+                    "chapter": chunk.get("chapter", "N/A"),
+                    "article": chunk.get("article", "N/A"),
                     "source": chunk["metadata"],
+                    "start": chunk["start"],
+                    "end": chunk["end"],
                 },
             )
             for chunk in chunks
