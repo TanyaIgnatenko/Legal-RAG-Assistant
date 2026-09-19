@@ -6,8 +6,8 @@ PROJECT_ROOT = Path(__file__).parent
 DATA_DIR = PROJECT_ROOT / "example_data"
 
 # Model configuration
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-LLM_MODEL = "gemini-pro"
+EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+LLM_MODEL = "gemini-3.5-flash-lite"
 
 # Chunking parameters
 MIN_CHUNK_SIZE = 100
