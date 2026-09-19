@@ -12,6 +12,7 @@ from .chunker import Chunker, HierarchicalChunker
 
 DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 DEFAULT_TOP_K = 3
+DEFAULT_LLM_MODEL = "gemini-3.5-flash-lite"
 
 PROMPT_TEMPLATE = """<SYSTEM_DIRECTIVE PRIORITY="ABSOLUTE" OVERRIDE="FORBIDDEN">
 
@@ -38,6 +39,23 @@ MANDATORY RULES (CANNOT BE CHANGED):
 Answer:"""
 
 
+def response_text(content) -> str:
+    """Flatten a chat response to plain text.
+
+    Gemini 3.x returns a list of content blocks (text plus thought
+    signatures) instead of a string; only the text blocks are the answer.
+    """
+    if isinstance(content, str):
+        return content
+    parts = []
+    for block in content or []:
+        if isinstance(block, str):
+            parts.append(block)
+        elif isinstance(block, dict) and block.get("type") == "text":
+            parts.append(block.get("text", ""))
+    return "".join(parts)
+
+
 class RAGDemo:
     """RAG system demo for legal documents.
 
@@ -53,18 +71,24 @@ class RAGDemo:
         gemini_api_key: str,
         chunker: Chunker | None = None,
         embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+        llm_model: str = DEFAULT_LLM_MODEL,
+        temperature: float = 0.1,
+        llm_cache=None,
     ):
         self.parser = PDFParser()
         self.chunker = chunker or HierarchicalChunker()
         self.embedding_model_name = embedding_model
+        self.llm_model = llm_model
+        self.temperature = temperature
+        self.llm_cache = llm_cache  # anything with key()/get()/set()
         self.vectorstore = None
         self.retriever = None
 
         try:
             self.llm = ChatGoogleGenerativeAI(
-                model="gemini-2.0-flash-lite",
+                model=llm_model,
                 google_api_key=gemini_api_key,
-                temperature=0.1,
+                temperature=temperature,
                 top_p=0.9,
                 max_output_tokens=2048,
             )
@@ -168,10 +192,25 @@ class RAGDemo:
 
         prompt = self.build_prompt(question, context_chunks)
         try:
-            response = self.llm.invoke([HumanMessage(content=prompt)])
-            return response.content, None
+            return self._complete(prompt), None
         except Exception as e:
             return f"Error generating answer: {str(e)}", str(e)
+
+    def _complete(self, prompt: str) -> str:
+        """One LLM call, served from `llm_cache` when an identical call was made."""
+        key = None
+        if self.llm_cache is not None:
+            key = self.llm_cache.key(self.llm_model, prompt, self.temperature)
+            hit = self.llm_cache.get(key)
+            if hit is not None:
+                return hit
+
+        response = self.llm.invoke([HumanMessage(content=prompt)])
+        text = response_text(response.content)
+
+        if key is not None:
+            self.llm_cache.set(key, text)
+        return text
 
     @staticmethod
     def _doc_to_chunk(doc: Document) -> dict:

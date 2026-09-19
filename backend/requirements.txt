@@ -18,3 +18,8 @@ langchain
 langchain-google-genai
 langchain-community
 langchain-huggingface
+
+# Evaluation
+scipy>=1.11        # binomtest for McNemar
+pandas>=2.0        # slicing traces
+pytest>=8.0
