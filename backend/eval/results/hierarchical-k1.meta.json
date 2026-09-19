@@ -1,0 +1,38 @@
+{
+  "config": {
+    "chunker": "hierarchical",
+    "top_k": 1,
+    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "name": "hierarchical-k1"
+  },
+  "mode": "fast",
+  "ground_truth": "quote_spans",
+  "generator_model": null,
+  "judge_model": null,
+  "judge_runs": null,
+  "dataset_file": "gdpr_qa_resolved.json",
+  "dataset_hash": "88cb15aade247218",
+  "chunker_code_hash": "6d9b0289c9c90b05",
+  "prompt_code_hash": "6eba71c38c33be4a",
+  "parse": {
+    "chars": 360853,
+    "lines": 4540,
+    "articles_found": 99,
+    "chapters_found": 11,
+    "max_line_len": 138,
+    "p50_line_len": 108,
+    "p95_line_len": 121
+  },
+  "chunks": {
+    "n_chunks": 99,
+    "unique_articles": 99,
+    "p50_chunk_len": 1413,
+    "p95_chunk_len": 5194,
+    "max_chunk_len": 8911,
+    "orphan_ratio": 0.4516,
+    "total_chars": 360853,
+    "covered_chars": 197890
+  },
+  "n_questions": 20,
+  "date": "2026-09-19T14:53:32+00:00"
+}

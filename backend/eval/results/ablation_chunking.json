@@ -1,0 +1,44 @@
+{
+  "chunkers": [
+    "hierarchical",
+    "recursive-512-128"
+  ],
+  "top_ks": [
+    1,
+    3,
+    5
+  ],
+  "mcnemar": [
+    {
+      "top_k": 1,
+      "a": "hierarchical",
+      "b": 3,
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "c": 1,
+      "discordant": 4,
+      "p_value": 0.625
+    },
+    {
+      "top_k": 3,
+      "a": "hierarchical",
+      "b": 5,
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "c": 1,
+      "discordant": 6,
+      "p_value": 0.21875
+    },
+    {
+      "top_k": 5,
+      "a": "hierarchical",
+      "b": 6,
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "c": 1,
+      "discordant": 7,
+      "p_value": 0.125
+    }
+  ],
+  "diagnoses": {}
+}
