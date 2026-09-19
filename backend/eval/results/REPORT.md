@@ -1,7 +1,7 @@
 # Evaluation report — chunking ablation
 
 Dataset `gdpr_qa_resolved.json` (sha `88cb15aade247218`), 20 questions. Ground truth: `quote_spans` (the sentence that answers the question, located verbatim in the PDF).
-Embedding model `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Chunker code sha `6d9b0289c9c90b05`. Generated 2026-09-19T14:53:35+00:00.
+Embedding model `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Chunker code sha `6d9b0289c9c90b05`. Generated 2026-09-19T19:59:01+00:00.
 
 ## 1. Ceiling ladder
 
@@ -13,7 +13,7 @@ Read top to bottom and fix the **first** rung that breaks, not the lowest number
 parse      articles=99 chapters=11 max_line=138         OK
 chunk      n=99 orphan=45% coverage=1.00 frag=1.00      OK
 retrieve   hit@3=0.38 (on coverage=1, n=16) MRR=0.28    <- median gold rank 5, 2 not in top-50
-generate   (not run: --fast)
+generate   (withheld: judge not validated against human labels)
 ```
 
 **recursive-512-128, k=3**
@@ -22,7 +22,7 @@ generate   (not run: --fast)
 parse      articles=99 chapters=11 max_line=138         OK
 chunk      n=1012 orphan=0% coverage=1.00 frag=1.41     OK
 retrieve   hit@3=0.12 (on coverage=1, n=16) MRR=0.09    <- median gold rank 23, 8 not in top-50
-generate   (not run: --fast)
+generate   (withheld: judge not validated against human labels)
 ```
 
 ## 2. Ablation
@@ -92,4 +92,5 @@ Not yet validated. Generation metrics are withheld until `python -m eval.judge_v
 Further, specific to this setup:
 
 - The two chunkers do not receive the same context budget at equal k: an article averages ~2,000 characters, a recursive chunk ~450. hit@k for the hierarchical chunker therefore rewards retrieving a much larger target.
+- The judge (`gemini-3.5-flash-lite`) is the same model that generated the answers, because the free-tier quota for a stronger judge is 20 requests a day. Models tend to rate their own output favourably, which is one more reason the generation numbers are only published if judge-human kappa reaches 0.6.
 - The hierarchical chunker does not index the 173 recitals (the preamble before Chapter I, 45% of the text). No question in this dataset is answered only by a recital, so that gap is invisible here rather than harmless.

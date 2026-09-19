@@ -5,11 +5,11 @@
     "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     "name": "recursive-512-128-k3"
   },
-  "mode": "fast",
+  "mode": "full",
   "ground_truth": "quote_spans",
-  "generator_model": null,
-  "judge_model": null,
-  "judge_runs": null,
+  "generator_model": "gemini-3.5-flash-lite",
+  "judge_model": "gemini-3.5-flash-lite",
+  "judge_runs": 3,
   "dataset_file": "gdpr_qa_resolved.json",
   "dataset_hash": "88cb15aade247218",
   "chunker_code_hash": "6d9b0289c9c90b05",
@@ -34,5 +34,5 @@
     "covered_chars": 360835
   },
   "n_questions": 20,
-  "date": "2026-09-19T14:54:49+00:00"
+  "date": "2026-09-19T20:08:10+00:00"
 }

@@ -30,6 +30,16 @@
       "p_value": 0.21875
     },
     {
+      "top_k": 3,
+      "a": "hierarchical",
+      "b": 5,
+      "field": "correct_retrieved",
+      "n_paired": 20,
+      "c": 1,
+      "discordant": 6,
+      "p_value": 0.21875
+    },
+    {
       "top_k": 5,
       "a": "hierarchical",
       "b": 6,
@@ -40,5 +50,42 @@
       "p_value": 0.125
     }
   ],
-  "diagnoses": {}
+  "diagnoses": {
+    "hierarchical-k3": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 7,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 9,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 2,
+        "diagnosis": "generation / prompt"
+      }
+    },
+    "recursive-512-128-k3": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 3,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 12,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 3,
+        "diagnosis": "generation / prompt"
+      }
+    }
+  }
 }
