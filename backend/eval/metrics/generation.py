@@ -20,7 +20,9 @@ from typing import Sequence
 from ..cache import LLMCache
 from .chunking import overlap
 
-JUDGE_MODEL = "gemini-3.5-flash"
+# Same model as the generator: the free tier caps gemini-3.5-flash at 20
+# requests/day. Self-grading is a known bias, reported in the limitations.
+JUDGE_MODEL = "gemini-3.5-flash-lite"
 JUDGE_TEMPERATURE = 0.0
 JUDGE_RUNS = 3
 
@@ -157,16 +159,20 @@ class Judge:
             temperature=JUDGE_TEMPERATURE,
             response_mime_type="application/json",
             max_output_tokens=1024,
+            max_retries=0,
         )
 
     def _sample(self, prompt: str, run: int) -> tuple[int, str]:
         from langchain_core.messages import HumanMessage
         from src.rag_system import response_text
 
+        from ..llm import with_backoff
+
         key = self.cache.key(self.model, prompt, JUDGE_TEMPERATURE, salt=f"run{run}")
         raw = self.cache.get(key)
         if raw is None:
-            raw = response_text(self.llm.invoke([HumanMessage(content=prompt)]).content)
+            raw = response_text(with_backoff(
+                lambda: self.llm.invoke([HumanMessage(content=prompt)])).content)
             parse_verdict(raw)             # only cache replies that parse
             self.cache.set(key, raw)
         return parse_verdict(raw)

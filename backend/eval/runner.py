@@ -112,6 +112,8 @@ class Workspace:
             rag = RAGDemo(self.api_key, chunker=chunker,
                           embedding_model=self.embedding_model,
                           llm_cache=self.llm_cache)
+            if rag.llm is not None:
+                rag.llm.max_retries = 0      # eval.llm.with_backoff owns retries
             chunks = chunker.chunk(self.raw)
             texts = [c["text"] for c in chunks]
             vectors = self.emb_cache.get_or_compute(
@@ -172,10 +174,15 @@ def _generate_and_judge(trace: Trace, item: dict, rag: RAGDemo, ws: Workspace,
                         retrieved: list[dict], gold_chunks: list[dict]) -> None:
     from eval.metrics.generation import abstained, cited_articles, citation_accuracy
 
+    from eval.llm import with_backoff
+
     q = item["question"]
     for label, context in (("oracle", gold_chunks), ("retrieved", retrieved), ("noctx", [])):
         t = time.perf_counter()
-        setattr(trace, f"a_{label}", rag.generate(q, context))
+        # Not rag.generate(): that turns API errors into an answer string,
+        # which the judge would then grade as if the model had said it.
+        prompt = rag.build_prompt(rag._sanitize_input(q), context)
+        setattr(trace, f"a_{label}", with_backoff(lambda: rag._complete(prompt)))
         trace.latency_ms[f"generate_{label}"] = _ms(t)
 
     judge = ws.judge

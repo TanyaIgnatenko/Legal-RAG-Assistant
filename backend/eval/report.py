@@ -254,6 +254,10 @@ def main() -> int:
               "- The two chunkers do not receive the same context budget at equal k: an article "
               "averages ~2,000 characters, a recursive chunk ~450. hit@k for the hierarchical "
               "chunker therefore rewards retrieving a much larger target.",
+              "- The judge (`gemini-3.5-flash-lite`) is the same model that generated the "
+              "answers, because the free-tier quota for a stronger judge is 20 requests a day. "
+              "Models tend to rate their own output favourably, which is one more reason the "
+              "generation numbers are only published if judge-human kappa reaches 0.6.",
               "- The hierarchical chunker does not index the 173 recitals (the preamble before "
               "Chapter I, 45% of the text). No question in this dataset is answered only by a "
               "recital, so that gap is invisible here rather than harmless.",
