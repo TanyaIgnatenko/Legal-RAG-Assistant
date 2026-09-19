@@ -1,0 +1,6 @@
+# Evaluation and tests — not needed by the deployed API.
+-r requirements.txt
+
+scipy>=1.11        # binomtest for McNemar
+pandas>=2.0        # slicing traces
+pytest>=8.0

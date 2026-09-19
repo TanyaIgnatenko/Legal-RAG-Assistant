@@ -69,6 +69,7 @@ Generation metrics are withheld until the LLM judge is validated against human l
 
 ```bash
 cd backend
+pip install -r requirements-dev.txt
 python -m eval.ablations.chunking --fast   # retrieval only, no LLM, ~1 min
 python -m eval.ablations.chunking --full   # plus generation and judge (needs GEMINI_API_KEY)
 python -m eval.report
