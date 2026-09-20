@@ -1,7 +1,7 @@
 # Evaluation report — chunking ablation
 
 Dataset `gdpr_qa_resolved.json` (sha `88cb15aade247218`), 20 questions. Ground truth: `quote_spans` (the sentence that answers the question, located verbatim in the PDF).
-Embedding model `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Chunker code sha `6d9b0289c9c90b05`. Generated 2026-09-19T19:59:01+00:00.
+Embedding model `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Chunker code sha `6d9b0289c9c90b05`. Generated 2026-09-20T09:13:59+00:00.
 
 ## 1. Ceiling ladder
 

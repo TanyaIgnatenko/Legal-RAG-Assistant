@@ -20,6 +20,16 @@
       "p_value": 0.625
     },
     {
+      "top_k": 1,
+      "a": "hierarchical",
+      "b": 1,
+      "field": "correct_retrieved",
+      "n_paired": 20,
+      "c": 0,
+      "discordant": 1,
+      "p_value": 1.0
+    },
+    {
       "top_k": 3,
       "a": "hierarchical",
       "b": 5,
@@ -48,9 +58,37 @@
       "c": 1,
       "discordant": 7,
       "p_value": 0.125
+    },
+    {
+      "top_k": 5,
+      "a": "hierarchical",
+      "b": 6,
+      "field": "correct_retrieved",
+      "n_paired": 20,
+      "c": 0,
+      "discordant": 6,
+      "p_value": 0.03125
     }
   ],
   "diagnoses": {
+    "hierarchical-k1": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 2,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 14,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 2,
+        "diagnosis": "generation / prompt"
+      }
+    },
     "hierarchical-k3": {
       "111": {
         "n": 2,
@@ -69,6 +107,42 @@
         "diagnosis": "generation / prompt"
       }
     },
+    "hierarchical-k5": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 8,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 8,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 2,
+        "diagnosis": "generation / prompt"
+      }
+    },
+    "recursive-512-128-k1": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 1,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 14,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 3,
+        "diagnosis": "generation / prompt"
+      }
+    },
     "recursive-512-128-k3": {
       "111": {
         "n": 2,
@@ -80,6 +154,24 @@
       },
       "100": {
         "n": 12,
+        "diagnosis": "retriever"
+      },
+      "000": {
+        "n": 3,
+        "diagnosis": "generation / prompt"
+      }
+    },
+    "recursive-512-128-k5": {
+      "111": {
+        "n": 2,
+        "diagnosis": "does not test RAG \u2014 model knows it unaided"
+      },
+      "110": {
+        "n": 2,
+        "diagnosis": "working as intended"
+      },
+      "100": {
+        "n": 13,
         "diagnosis": "retriever"
       },
       "000": {
