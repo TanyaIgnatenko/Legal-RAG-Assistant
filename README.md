@@ -62,10 +62,21 @@ and part of its edge comes from each article chunk being a ~4× larger target th
 sits at median rank 5 for hierarchical (k is too small) and rank 23 for recursive
 (embeddings do not surface it).
 
+**What `k` buys.** `k` is how many chunks go into the prompt as context. Raising it lifts
+recall (hit@k 0.19 → 0.38 → 0.44 for hierarchical) but dilutes precision (0.19 → 0.10) and
+grows the context from ~2.3k to ~10.3k characters. It only helps when the answering passage
+is ranked just below the cut: traces record `rank_of_gold` so the two failure modes stay
+distinguishable. For recursive chunks the median gold rank is 23, so a larger `k` does not
+rescue it.
+
+**Not yet published.** Generation has been run for all six configurations (oracle /
+retrieved / no-context answers, graded by an LLM judge), but those numbers stay out of this
+README and out of the report until the judge is checked against human labels — 15 answers
+are exported to `backend/eval/results/judge_validation.csv` and Cohen's κ must reach 0.6.
+The judge is the same model that wrote the answers, so this gate is not a formality.
+
 Full report, slices by question type and chapter, and limitations:
 [`backend/eval/results/REPORT.md`](backend/eval/results/REPORT.md).
-Generation metrics are withheld until the LLM judge is validated against human labels
-(Cohen's κ ≥ 0.6).
 
 ```bash
 cd backend
@@ -73,6 +84,9 @@ pip install -r requirements-dev.txt
 python -m eval.ablations.chunking --fast   # retrieval only, no LLM, ~1 min
 python -m eval.ablations.chunking --full   # plus generation and judge (needs GEMINI_API_KEY)
 python -m eval.report
+
+# after labelling human_score in eval/results/judge_validation.csv
+python -m eval.judge_validation score
 ```
 
 ## 🔧 Tech Stack
