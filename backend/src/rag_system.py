@@ -10,8 +10,11 @@ from typing import List, Tuple
 from .parser import PDFParser
 from .chunker import Chunker, HierarchicalChunker
 
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-DEFAULT_TOP_K = 3
+# Chosen by measurement, not by default: see backend/eval/results/REPORT.md.
+# bge-small-en-v1.5 at k=10 beats the previous multilingual encoder at k=3 on
+# every question that separates them (hit@k 7-0, answer correctness 6-0).
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+DEFAULT_TOP_K = 10
 DEFAULT_LLM_MODEL = "gemini-3.5-flash-lite"
 
 PROMPT_TEMPLATE = """<SYSTEM_DIRECTIVE PRIORITY="ABSOLUTE" OVERRIDE="FORBIDDEN">

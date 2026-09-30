@@ -19,11 +19,11 @@ PDF Document
     ↓
 Parse & Chunk (PyMuPDF + Hierarchical chunking)
     ↓
-Generate Embeddings (paraphrase-multilingual-MiniLM-L12-v2)
+Generate Embeddings (bge-small-en-v1.5)
     ↓
 Store in Vector DB (FAISS)
     ↓
-User Query → Semantic Search → Retrieve Top-K Chunks
+User Query → Semantic Search → Retrieve Top-10 Chunks
     ↓
 LLM (Gemini) + Context → Generate Answer
 ```
@@ -31,49 +31,68 @@ LLM (Gemini) + Context → Generate Answer
 ## 📊 Evaluation
 
 A span-based eval harness lives in [`backend/eval/`](backend/eval). Ground truth is the
-sentence that answers each question, located verbatim in the PDF, so chunking strategies
-are scored in the same coordinate space rather than by comparing metadata labels.
-20 questions across all 11 GDPR chapters (12 factual, 4 multi-hop, 2 unanswerable,
-2 out-of-scope).
+sentence that answers each question, located verbatim in the PDF, so retrieval is scored by
+character-offset overlap rather than by comparing metadata labels — which is what lets
+different chunkers and encoders be compared in one coordinate space. 20 questions across all
+11 GDPR chapters (12 factual, 4 multi-hop, 2 unanswerable, 2 out-of-scope).
 
-**Ceiling ladder** (k=3). Fix the first rung that breaks:
+**The production configuration was chosen by measurement**: hierarchical (article-level)
+chunking, `BAAI/bge-small-en-v1.5`, `top_k=10`. Against the previous default —
+`paraphrase-multilingual-MiniLM-L12-v2` at `top_k=3` — it wins on every question that
+separates the two, and this is the one comparison in the project that reaches significance:
+
+| | previous default | shipped |
+|---|---|---|
+| hit@k (answering passage retrieved) | 0.38 | **0.81** |
+| answers correct | 9/20 | **15/20** |
+| false abstentions on answerable questions | 50% | **19%** |
+| faithfulness / citation accuracy | 1.00 / 1.00 | 1.00 / 1.00 |
+| input tokens per question | 1,516 | 5,582 |
+| USD per 1,000 questions | $0.62 | $1.92 |
+
+McNemar's exact test, paired on the same questions: hit@k 7–0 (p = 0.016), answer
+correctness 6–0 (p = 0.031). Nothing regressed — no hallucination appeared with the larger
+context, and the extra cost is under two dollars per thousand questions.
+
+**Ceiling ladder.** Read top down and fix the first rung that breaks:
 
 ```
-                 hierarchical              recursive-512-128
-parse            99 articles, 11 chapters  99 articles, 11 chapters   OK
-chunk            n=99   coverage=1.00      n=1012 coverage=1.00       OK
-retrieve         hit@3=0.38  MRR=0.28      hit@3=0.12  MRR=0.09       <- breaks here
-                 median gold rank 5        median gold rank 23
-generate         pending judge validation
+parse      99 articles, 11 chapters, max line 138       OK
+chunk      n=99  coverage=1.00  frag=1.00  orphan=45%   OK (orphan = the recitals)
+retrieve   hit@10=0.81  MRR=0.52  median gold rank 2    <- still the ceiling
+generate   with oracle context 18/20; with no context 2/20
 ```
 
-**Chunking ablation** (retrieval, answerable questions, n=16 paired):
+The ladder is what identified the encoder. Retrieval, not generation, was the bottleneck:
+the model answers 18/20 when handed the right passage and 2/20 with no context, so every
+lost question was a retrieval miss. `rank_of_gold` then separated "k is too small" from
+"the encoder never surfaces it" — the old multilingual encoder left 2 of 16 questions
+outside the top 50 at any depth, the new one leaves none.
 
-| k | hierarchical hit@k | recursive-512-128 hit@k | hier. only / recur. only | McNemar exact p |
-|---|---|---|---|---|
-| 1 | 0.19 | 0.06 | 3 / 1 | 0.625 |
-| 3 | 0.38 | 0.12 | 5 / 1 | 0.219 |
-| 5 | 0.44 | 0.12 | 6 / 1 | 0.125 |
+**Ablations** (`backend/eval/ablations/`, both re-runnable):
 
-Hierarchical (article-level) chunking retrieves the answering passage more often at every
-k, but with 16 paired questions the difference is not statistically significant (p ≥ 0.125),
-and part of its edge comes from each article chunk being a ~4× larger target than a
-512-character window. The shared bottleneck is the retriever itself: the answering passage
-sits at median rank 5 for hierarchical (k is too small) and rank 23 for recursive
-(embeddings do not surface it).
+*Chunking* — hierarchical vs recursive-512-128, k ∈ {1,3,5}. Hierarchical retrieves the
+answer more often at every k (hit@3 0.38 vs 0.12) and wins answer correctness 6–0 at k=5
+(p = 0.031). Part of its edge is that an article chunk is a ~4× larger target than a
+512-character window, which is why the fixed-window chunker is not simply "worse".
 
-**What `k` buys.** `k` is how many chunks go into the prompt as context. Raising it lifts
-recall (hit@k 0.19 → 0.38 → 0.44 for hierarchical) but dilutes precision (0.19 → 0.10) and
-grows the context from ~2.3k to ~10.3k characters. It only helps when the answering passage
-is ranked just below the cut: traces record `rank_of_gold` so the two failure modes stay
-distinguishable. For recursive chunks the median gold rank is 23, so a larger `k` does not
-rescue it.
+*Embedding model* — three encoders, k ∈ {1,3,5,7,10,15,20}:
 
-**Not yet published.** Generation has been run for all six configurations (oracle /
-retrieved / no-context answers, graded by an LLM judge), but those numbers stay out of this
-README and out of the report until the judge is checked against human labels — 15 answers
-are exported to `backend/eval/results/judge_validation.csv` and Cohen's κ must reach 0.6.
-The judge is the same model that wrote the answers, so this gate is not a formality.
+| encoder | @1 | @3 | @5 | @10 | @20 | reachable in top-50 |
+|---|---|---|---|---|---|---|
+| paraphrase-multilingual-MiniLM-L12-v2 | 0.19 | 0.38 | 0.44 | 0.69 | 0.75 | 0.88 |
+| all-MiniLM-L6-v2 | 0.31 | 0.62 | 0.69 | 0.69 | 0.81 | 0.94 |
+| bge-small-en-v1.5 | 0.31 | 0.69 | 0.75 | 0.81 | 0.81 | **1.00** |
+
+The multilingual encoder needs k=20 to reach what bge reaches at k=5 — same hit rate, four
+times the context. Its last column is the reason a reranker alone would not have fixed this:
+a reranker can only reorder what the encoder already surfaced.
+
+**Not published yet.** Generation metrics above are graded by an LLM judge that has not been
+validated against human labels. 15 answers are exported to
+`backend/eval/results/judge_validation.csv`; Cohen's κ must reach 0.6 before the report
+publishes generation numbers. The judge is the same model that wrote the answers, so this
+gate is not a formality.
 
 Full report, slices by question type and chapter, and limitations:
 [`backend/eval/results/REPORT.md`](backend/eval/results/REPORT.md).
@@ -81,8 +100,9 @@ Full report, slices by question type and chapter, and limitations:
 ```bash
 cd backend
 pip install -r requirements-dev.txt
-python -m eval.ablations.chunking --fast   # retrieval only, no LLM, ~1 min
-python -m eval.ablations.chunking --full   # plus generation and judge (needs GEMINI_API_KEY)
+python -m eval.ablations.chunking --fast     # retrieval only, no LLM, ~1 min
+python -m eval.ablations.embeddings --fast   # encoder sweep, no LLM
+python -m eval.ablations.chunking --full     # plus generation and judge (needs GEMINI_API_KEY)
 python -m eval.report
 
 # after labelling human_score in eval/results/judge_validation.csv

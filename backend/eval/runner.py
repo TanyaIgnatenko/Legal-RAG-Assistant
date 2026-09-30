@@ -32,6 +32,7 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 from eval.cache import EmbeddingCache, LLMCache  # noqa: E402
+from eval.cost import TokenCounter, price  # noqa: E402
 from eval.dataset.build_spans import GDPR_PDF, RESOLVED, article_spans, dataset_hash  # noqa: E402
 from eval.metrics.chunking import (  # noqa: E402
     chunks_overlapping,
@@ -47,6 +48,7 @@ from src.rag_system import DEFAULT_EMBEDDING_MODEL, DEFAULT_LLM_MODEL, RAGDemo  
 
 RESULTS = BACKEND / "eval" / "results"
 GROUND_TRUTH = "quote_spans"
+UNSUFFIXED_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 
 @dataclass
@@ -57,9 +59,11 @@ class EvalConfig:
 
     @property
     def name(self) -> str:
-        # The default model is left out of the name so result filenames from
-        # the chunking ablation stay stable.
-        if self.embedding_model == DEFAULT_EMBEDDING_MODEL:
+        # Result filenames predate the switch to bge, and the chunking ablation
+        # was run before the embedding model was a dimension at all. The old
+        # encoder therefore keeps the bare name so committed traces stay
+        # addressable; every other model carries a suffix.
+        if self.embedding_model == UNSUFFIXED_EMBEDDING_MODEL:
             return f"{self.chunker}-k{self.top_k}"
         return f"{self.chunker}-k{self.top_k}-{self.embedding_model.split('/')[-1]}"
 
@@ -88,6 +92,8 @@ class Trace:
     citation_ok: bool | None = None
     has_citation: bool | None = None
     abstained: bool | None = None
+    tokens: dict = field(default_factory=dict)
+    cost_usd: dict = field(default_factory=dict)
     judge_spread: dict = field(default_factory=dict)
     judge_reasoning: dict = field(default_factory=dict)
     latency_ms: dict = field(default_factory=dict)
@@ -102,6 +108,7 @@ class Workspace:
         self.article_spans = article_spans(self.raw)
         self.llm_cache = LLMCache()
         self.emb_cache = EmbeddingCache()
+        self.tokens = TokenCounter(api_key)
         self.api_key = api_key
         self.embedding_model = embedding_model
         self._systems: dict[tuple[str, str], tuple[RAGDemo, list[dict]]] = {}
@@ -193,8 +200,16 @@ def _generate_and_judge(trace: Trace, item: dict, rag: RAGDemo, ws: Workspace,
         # Not rag.generate(): that turns API errors into an answer string,
         # which the judge would then grade as if the model had said it.
         prompt = rag.build_prompt(rag._sanitize_input(q), context)
-        setattr(trace, f"a_{label}", with_backoff(lambda: rag._complete(prompt)))
+        answer = with_backoff(lambda: rag._complete(prompt))
+        setattr(trace, f"a_{label}", answer)
         trace.latency_ms[f"generate_{label}"] = _ms(t)
+
+        # What this question would cost in production, generation only; the
+        # judge is an evaluation expense and is not counted here.
+        n_in = ws.tokens.count(rag.llm_model, prompt)
+        n_out = ws.tokens.count(rag.llm_model, answer)
+        trace.tokens[label] = {"input": n_in, "output": n_out}
+        trace.cost_usd[label] = price(rag.llm_model, n_in, n_out)
 
     judge = ws.judge
     for label in ("oracle", "retrieved", "noctx"):

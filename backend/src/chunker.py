@@ -232,9 +232,27 @@ class RecursiveOverlapChunker:
         return kept
 
 
+class WholeDocumentChunker:
+    """The entire document as one chunk — the no-retrieval upper bound.
+
+    Paired with top_k=1 this puts the whole text in the prompt, which answers
+    "how much does retrieval cost us against simply sending everything?".
+    Retrieval metrics are trivially perfect for it; the interesting columns
+    are answer correctness, tokens and price.
+    """
+
+    name = "whole-document"
+
+    def chunk(self, text: str) -> List[Dict]:
+        chunk = _emit(text, 0, len(text), chapter="ALL", chapter_title="",
+                      article="ALL", metadata="whole document")
+        return [chunk] if chunk else []
+
+
 CHUNKERS = {
     "hierarchical": HierarchicalChunker,
     "recursive-512-128": lambda: RecursiveOverlapChunker(512, 128),
+    "whole-document": WholeDocumentChunker,
 }
 
 

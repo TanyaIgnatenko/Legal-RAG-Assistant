@@ -18,10 +18,15 @@ if str(BACKEND) not in sys.path:
 
 from eval.ablations.chunking import CHUNKERS, SUMMARY, TOP_KS, load  # noqa: E402
 from eval.judge_validation import JSON_PATH as JUDGE_JSON  # noqa: E402
+from eval.cost import PRICES_READ_ON, PRICES_USD_PER_MTOK  # noqa: E402
 from eval.runner import RESULTS  # noqa: E402
+from src.rag_system import DEFAULT_LLM_MODEL  # noqa: E402
 
 REPORT = RESULTS / "REPORT.md"
 HEADLINE_K = 3
+_rate = PRICES_USD_PER_MTOK.get(DEFAULT_LLM_MODEL, {})
+GENERATOR_RATE = (f"${_rate.get('input')}/M in, ${_rate.get('output')}/M out"
+                  if _rate else "an unpinned rate")
 
 LIMITATIONS = (
     "> 20 questions, stratified across GDPR chapters and 4 question types. This is not a statistically\n"
@@ -82,7 +87,12 @@ def row_metrics(name: str) -> dict:
     if has_generation(df):
         unans = df[df["qtype"].isin(["unanswerable", "out_of_scope"])]
         ans = df[~df["qtype"].isin(["unanswerable", "out_of_scope"])]
+        retrieved_tokens = [t.get("retrieved") for t in df["tokens"] if isinstance(t, dict)]
         out |= {
+            "in_tok": mean(pd.Series([t["input"] for t in retrieved_tokens if t])),
+            "out_tok": mean(pd.Series([t["output"] for t in retrieved_tokens if t])),
+            "usd_per_q": mean(pd.Series([c.get("retrieved") for c in df["cost_usd"]
+                                         if isinstance(c, dict)])),
             "oracle": mean(df["correct_oracle"]),
             "retrieved": mean(df["correct_retrieved"]),
             "noctx": mean(df["correct_noctx"]),
@@ -127,6 +137,9 @@ def ablation_table(publish_generation: bool) -> list[str]:
             ("recall", "recall@k", None), ("precision", "prec@k", None),
             ("mrr", "MRR", None), ("median_rank", "med. gold rank", "int"),
             ("ctx_chars", "ctx chars", "int")]
+    if any(r.get("in_tok") for r in rows):
+        cols += [("in_tok", "in tok", "int"), ("out_tok", "out tok", "int"),
+                 ("usd_per_q", "USD / question", "usd")]
     if publish_generation and any("retrieved" in r for r in rows):
         cols += [("oracle", "correct oracle", None), ("retrieved", "correct retr.", None),
                  ("noctx", "correct noctx", None), ("faithful", "faithful", None)]
@@ -135,6 +148,8 @@ def ablation_table(publish_generation: bool) -> list[str]:
         v = r.get(key)
         if kind == "int":
             return "—" if v is None else f"{v:,.0f}"
+        if kind == "usd":
+            return "—" if v is None else f"${v:.5f}"
         if kind == "pct":
             return fmt(v, pct=True)
         return v if key == "config" else fmt(v)
@@ -221,7 +236,10 @@ def main() -> int:
         lines += [f"**{c}, k={HEADLINE_K}**", "", "```", *ladder(f"{c}-k{HEADLINE_K}", publish), "```", ""]
 
     lines += ["## 2. Ablation", "", *ablation_table(publish), "",
-              "Retrieval metrics are averaged over answerable questions with coverage = 1 only.",
+              "Retrieval metrics are averaged over answerable questions with coverage = 1 only. "
+              "Token counts are exact (provider count_tokens) for the retrieved-context answer; "
+              f"price is generation only at {GENERATOR_RATE}, read {PRICES_READ_ON}. "
+              "The LLM judge is an evaluation expense and is not included.",
               "",
               "**McNemar's exact test** (paired on the same questions; "
               "only questions where the two chunkers disagree carry information):", "",

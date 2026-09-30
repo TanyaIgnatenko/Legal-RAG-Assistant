@@ -6,12 +6,12 @@ PROJECT_ROOT = Path(__file__).parent
 DATA_DIR = PROJECT_ROOT / "example_data"
 
 # Model configuration
-EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 LLM_MODEL = "gemini-3.5-flash-lite"
 
 # Chunking parameters
 MIN_CHUNK_SIZE = 100
-DEFAULT_TOP_K = 3
+DEFAULT_TOP_K = 10
 
 
 # API Settings

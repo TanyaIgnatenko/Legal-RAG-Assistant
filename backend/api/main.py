@@ -49,7 +49,7 @@ async def startup_event():
 
 class QuestionRequest(BaseModel):
     question: str
-    top_k: int = 3
+    top_k: int = 10
 
 
 @app.get("/")
