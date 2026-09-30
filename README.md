@@ -8,8 +8,8 @@ AI-powered legal document analysis to help you understand legal documents more e
 
 **Answers you can check**
 
-- 📎 **Inline citations** - every answer cites the GDPR articles it used, verified against
-  the retrieved text (100% accurate).
+- 📎 **Inline citations** - every answer cites the GDPR articles it used, checked against
+  the retrieved text.
 - 📚 **Sources shown** - the passages behind each answer are listed under it.
 - 🤐 **Says "I don't know"** - declines instead of guessing. Zero hallucinations measured.
 
