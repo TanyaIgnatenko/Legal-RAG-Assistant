@@ -30,83 +30,50 @@ LLM (Gemini) + Context → Generate Answer
 
 ## 📊 Evaluation
 
-A span-based eval harness lives in [`backend/eval/`](backend/eval). Ground truth is the
-sentence that answers each question, located verbatim in the PDF, so retrieval is scored by
-character-offset overlap rather than by comparing metadata labels — which is what lets
-different chunkers and encoders be compared in one coordinate space. 20 questions across all
-11 GDPR chapters (12 factual, 4 multi-hop, 2 unanswerable, 2 out-of-scope).
+Eval harness in [`backend/eval/`](backend/eval). 20 GDPR questions across all 11 chapters,
+each labelled with the exact sentence that answers it. Retrieval is scored by character
+offsets, so different chunkers and encoders are comparable.
 
-**The production configuration was chosen by measurement**: hierarchical (article-level)
-chunking, `BAAI/bge-small-en-v1.5`, `top_k=10`. Against the previous default —
-`paraphrase-multilingual-MiniLM-L12-v2` at `top_k=3` — it wins on every question that
-separates the two, and this is the one comparison in the project that reaches significance:
+**The production config was chosen by measurement**, not by default: hierarchical chunking,
+`bge-small-en-v1.5`, `top_k=10`.
 
-| | previous default | shipped |
+| | before | now |
 |---|---|---|
-| hit@k (answering passage retrieved) | 0.38 | **0.81** |
+| retrieval hit@k | 0.38 | **0.81** |
 | answers correct | 9/20 | **15/20** |
-| false abstentions on answerable questions | 50% | **19%** |
-| faithfulness / citation accuracy | 1.00 / 1.00 | 1.00 / 1.00 |
-| input tokens per question | 1,516 | 5,582 |
-| USD per 1,000 questions | $0.62 | $1.92 |
+| wrongly refused to answer | 50% | **19%** |
+| hallucinations / bad citations | 0 | 0 |
+| cost per 1,000 questions | $0.62 | $1.92 |
 
-McNemar's exact test, paired on the same questions: hit@k 7–0 (p = 0.016), answer
-correctness 6–0 (p = 0.031). Nothing regressed — no hallucination appeared with the larger
-context, and the extra cost is under two dollars per thousand questions.
+McNemar's exact test on the same questions: 7–0 on retrieval (p = 0.016), 6–0 on
+correctness (p = 0.031).
 
-**Ceiling ladder.** Read top down and fix the first rung that breaks:
+**How the bottleneck was found.** With the correct passage handed to it, the model answers
+18/20; with no context, 2/20. So generation was fine and every loss was a retrieval miss.
+Traces record the rank of the correct passage, which separated "top_k too small" from "the
+encoder never finds it" — the old multilingual encoder missed 2 of 16 questions at any
+depth, the new one misses none.
 
-```
-parse      99 articles, 11 chapters, max line 138       OK
-chunk      n=99  coverage=1.00  frag=1.00  orphan=45%   OK (orphan = the recitals)
-retrieve   hit@10=0.81  MRR=0.52  median gold rank 2    <- still the ceiling
-generate   with oracle context 18/20; with no context 2/20
-```
+**Guardrails.** 12 prompt-injection attacks, half planted inside retrieved documents:
+all held, no system-prompt leak, no invented articles ([`eval/red_team.py`](backend/eval/red_team.py)).
 
-The ladder is what identified the encoder. Retrieval, not generation, was the bottleneck:
-the model answers 18/20 when handed the right passage and 2/20 with no context, so every
-lost question was a retrieval miss. `rank_of_gold` then separated "k is too small" from
-"the encoder never surfaces it" — the old multilingual encoder left 2 of 16 questions
-outside the top 50 at any depth, the new one leaves none.
+**CI.** Every pull request runs a regression gate — parse, chunk and retrieval, no LLM
+calls — that fails if any metric drops below the committed baseline.
 
-**Ablations** (`backend/eval/ablations/`, both re-runnable):
+**Caveats.** 20 questions is a small sample (±20pp on absolute numbers), which is why
+comparisons are paired. Answer-correctness numbers come from an LLM judge that has not yet
+been validated against human labels.
 
-*Chunking* — hierarchical vs recursive-512-128, k ∈ {1,3,5}. Hierarchical retrieves the
-answer more often at every k (hit@3 0.38 vs 0.12) and wins answer correctness 6–0 at k=5
-(p = 0.031). Part of its edge is that an article chunk is a ~4× larger target than a
-512-character window, which is why the fixed-window chunker is not simply "worse".
-
-*Embedding model* — three encoders, k ∈ {1,3,5,7,10,15,20}:
-
-| encoder | @1 | @3 | @5 | @10 | @20 | reachable in top-50 |
-|---|---|---|---|---|---|---|
-| paraphrase-multilingual-MiniLM-L12-v2 | 0.19 | 0.38 | 0.44 | 0.69 | 0.75 | 0.88 |
-| all-MiniLM-L6-v2 | 0.31 | 0.62 | 0.69 | 0.69 | 0.81 | 0.94 |
-| bge-small-en-v1.5 | 0.31 | 0.69 | 0.75 | 0.81 | 0.81 | **1.00** |
-
-The multilingual encoder needs k=20 to reach what bge reaches at k=5 — same hit rate, four
-times the context. Its last column is the reason a reranker alone would not have fixed this:
-a reranker can only reorder what the encoder already surfaced.
-
-**Not published yet.** Generation metrics above are graded by an LLM judge that has not been
-validated against human labels. 15 answers are exported to
-`backend/eval/results/judge_validation.csv`; Cohen's κ must reach 0.6 before the report
-publishes generation numbers. The judge is the same model that wrote the answers, so this
-gate is not a formality.
-
-Full report, slices by question type and chapter, and limitations:
-[`backend/eval/results/REPORT.md`](backend/eval/results/REPORT.md).
+Full report: [`backend/eval/results/REPORT.md`](backend/eval/results/REPORT.md).
 
 ```bash
 cd backend
 pip install -r requirements-dev.txt
-python -m eval.ablations.chunking --fast     # retrieval only, no LLM, ~1 min
+python -m eval.gate                          # regression gate, no LLM
 python -m eval.ablations.embeddings --fast   # encoder sweep, no LLM
-python -m eval.ablations.chunking --full     # plus generation and judge (needs GEMINI_API_KEY)
+python -m eval.ablations.chunking --full     # + generation and judge (needs GEMINI_API_KEY)
+python -m eval.red_team                      # prompt-injection suite
 python -m eval.report
-
-# after labelling human_score in eval/results/judge_validation.csv
-python -m eval.judge_validation score
 ```
 
 ## 🔧 Tech Stack
