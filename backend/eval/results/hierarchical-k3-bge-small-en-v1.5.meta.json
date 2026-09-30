@@ -1,9 +1,9 @@
 {
   "config": {
     "chunker": "hierarchical",
-    "top_k": 5,
-    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-    "name": "hierarchical-k5"
+    "top_k": 3,
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "name": "hierarchical-k3-bge-small-en-v1.5"
   },
   "mode": "fast",
   "ground_truth": "quote_spans",
@@ -34,5 +34,5 @@
     "covered_chars": 197890
   },
   "n_questions": 20,
-  "date": "2026-09-30T11:36:07+00:00"
+  "date": "2026-09-30T11:36:55+00:00"
 }

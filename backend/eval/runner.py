@@ -57,7 +57,11 @@ class EvalConfig:
 
     @property
     def name(self) -> str:
-        return f"{self.chunker}-k{self.top_k}"
+        # The default model is left out of the name so result filenames from
+        # the chunking ablation stay stable.
+        if self.embedding_model == DEFAULT_EMBEDDING_MODEL:
+            return f"{self.chunker}-k{self.top_k}"
+        return f"{self.chunker}-k{self.top_k}-{self.embedding_model.split('/')[-1]}"
 
 
 @dataclass
@@ -100,31 +104,38 @@ class Workspace:
         self.emb_cache = EmbeddingCache()
         self.api_key = api_key
         self.embedding_model = embedding_model
-        self._systems: dict[str, tuple[RAGDemo, list[dict]]] = {}
+        self._systems: dict[tuple[str, str], tuple[RAGDemo, list[dict]]] = {}
         self._judge = None
 
-    def system(self, chunker_name: str) -> tuple[RAGDemo, list[dict]]:
-        """A RAGDemo indexed with `chunker_name`, embeddings served from cache."""
-        if chunker_name not in self._systems:
+    def system(self, chunker_name: str,
+               embedding_model: str | None = None) -> tuple[RAGDemo, list[dict]]:
+        """A RAGDemo indexed with this chunker and embedding model.
+
+        Indexes are cached per (chunker, embedding model) so an ablation that
+        sweeps top_k builds each one once.
+        """
+        embedding_model = embedding_model or self.embedding_model
+        key = (chunker_name, embedding_model)
+        if key not in self._systems:
             from langchain_community.vectorstores import FAISS
 
             chunker = get_chunker(chunker_name)
             rag = RAGDemo(self.api_key, chunker=chunker,
-                          embedding_model=self.embedding_model,
+                          embedding_model=embedding_model,
                           llm_cache=self.llm_cache)
             if rag.llm is not None:
                 rag.llm.max_retries = 0      # eval.llm.with_backoff owns retries
             chunks = chunker.chunk(self.raw)
             texts = [c["text"] for c in chunks]
             vectors = self.emb_cache.get_or_compute(
-                self.embedding_model, texts, rag.embeddings.embed_documents)
+                embedding_model, texts, rag.embeddings.embed_documents)
             docs = RAGDemo._to_langchain_docs(chunks)
             rag.vectorstore = FAISS.from_embeddings(
                 list(zip(texts, vectors.tolist())), rag.embeddings,
                 metadatas=[d.metadata for d in docs])
             rag.retriever = rag.vectorstore.as_retriever(search_kwargs={"k": 3})
-            self._systems[chunker_name] = (rag, chunks)
-        return self._systems[chunker_name]
+            self._systems[key] = (rag, chunks)
+        return self._systems[key]
 
     @property
     def judge(self):
@@ -139,7 +150,7 @@ def _ms(start: float) -> int:
 
 
 def evaluate(config: EvalConfig, ws: Workspace, full: bool) -> list[Trace]:
-    rag, chunks = ws.system(config.chunker)
+    rag, chunks = ws.system(config.chunker, config.embedding_model)
     traces = []
 
     for item in ws.dataset:
@@ -213,7 +224,7 @@ def write_results(config: EvalConfig, traces: list[Trace], ws: Workspace, full: 
         for tr in traces:
             f.write(json.dumps(asdict(tr), ensure_ascii=False) + "\n")
 
-    _, chunks = ws.system(config.chunker)
+    _, chunks = ws.system(config.chunker, config.embedding_model)
     meta = {
         "config": asdict(config) | {"name": config.name},
         "mode": "full" if full else "fast",
@@ -250,13 +261,14 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--chunker", default="hierarchical")
     ap.add_argument("--top-k", type=int, default=3)
+    ap.add_argument("--embedding-model", default=DEFAULT_EMBEDDING_MODEL)
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--fast", action="store_true", help="no LLM (default)")
     mode.add_argument("--full", action="store_true", help="generation + judge")
     args = ap.parse_args()
 
     ws = Workspace(api_key=os.getenv("GEMINI_API_KEY", ""))
-    run(EvalConfig(args.chunker, args.top_k), ws, full=args.full)
+    run(EvalConfig(args.chunker, args.top_k, args.embedding_model), ws, full=args.full)
     return 0
 
 
