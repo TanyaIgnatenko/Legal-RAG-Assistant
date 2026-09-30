@@ -59,3 +59,48 @@ def test_response_text_flattens_gemini3_blocks():
               {"type": "text", "text": "world"}]
     assert response_text(blocks) == "Hello world"
     assert response_text("plain") == "plain"
+
+
+# ── regression gate ──────────────────────────────────────────────────
+
+def _baseline():
+    return {"config": "hierarchical-k10-bge-small-en-v1.5", "hit_at_k": 0.8125,
+            "recall_at_k": 0.78, "mrr": 0.51, "coverage": 1.0,
+            "n_chunks": 99, "unique_articles": 99}
+
+
+def test_gate_passes_on_identical_numbers():
+    from eval.gate import check_regressions
+    regressions, improvements = check_regressions(_baseline(), _baseline())
+    assert not regressions and not improvements
+
+
+def test_gate_catches_a_drop():
+    from eval.gate import check_regressions
+    current = _baseline() | {"hit_at_k": 0.75}
+    regressions, _ = check_regressions(current, _baseline())
+    assert len(regressions) == 1 and "hit_at_k" in regressions[0]
+
+
+def test_gate_reports_improvement_without_failing():
+    from eval.gate import check_regressions
+    current = _baseline() | {"hit_at_k": 0.875}
+    regressions, improvements = check_regressions(current, _baseline())
+    assert not regressions and len(improvements) == 1
+
+
+def test_gate_catches_a_broken_chunker():
+    """A chunker that stops finding articles must not slip through."""
+    from eval.gate import check_regressions
+    current = _baseline() | {"n_chunks": 26, "unique_articles": 26}
+    regressions, _ = check_regressions(current, _baseline())
+    assert len(regressions) == 2
+
+
+def test_gate_absolute_thresholds_catch_a_broken_parse():
+    from eval.gate import check_absolute
+    assert not check_absolute({"chars": 360_853, "articles_found": 99,
+                               "chapters_found": 11, "max_line_len": 138})
+    failures = check_absolute({"chars": 360_853, "articles_found": 12,
+                               "chapters_found": 11, "max_line_len": 900})
+    assert len(failures) == 2

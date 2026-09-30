@@ -200,3 +200,31 @@ def test_aggregate_by_slices():
     assert aggregate_by(rows, "hit_at_k", "qtype") == {
         "factual": pytest.approx(0.5), "multi_hop": 1.0,
     }
+
+
+# ── judge verdict parsing ────────────────────────────────────────────
+
+def test_parse_verdict_plain():
+    from eval.metrics.generation import parse_verdict
+    assert parse_verdict('{"score": 1, "reasoning": "matches"}') == (1, "matches")
+
+
+def test_parse_verdict_tolerates_fences_and_prose():
+    from eval.metrics.generation import parse_verdict
+    raw = 'Here is my verdict:\n```json\n{"score": 0, "reasoning": "wrong figure"}\n```'
+    assert parse_verdict(raw) == (0, "wrong figure")
+
+
+def test_parse_verdict_stops_at_first_object():
+    """The judge sometimes emits two verdicts; a greedy {.*} swallowed both."""
+    from eval.metrics.generation import parse_verdict
+    raw = '{"score": 1, "reasoning": "ok"}{"score": 0, "reasoning": "second"}'
+    assert parse_verdict(raw) == (1, "ok")
+
+
+def test_parse_verdict_rejects_garbage():
+    from eval.metrics.generation import parse_verdict
+    with pytest.raises(ValueError):
+        parse_verdict("no json here")
+    with pytest.raises(ValueError):
+        parse_verdict('{"score": 7, "reasoning": "out of range"}')
