@@ -10,7 +10,9 @@
     3,
     5,
     7,
-    10
+    10,
+    15,
+    20
   ],
   "mcnemar": [
     {
@@ -69,6 +71,28 @@
       "p_value": 1.0
     },
     {
+      "top_k": 15,
+      "baseline": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "b": 1,
+      "c": 3,
+      "discordant": 4,
+      "p_value": 0.625
+    },
+    {
+      "top_k": 20,
+      "baseline": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "b": 1,
+      "c": 2,
+      "discordant": 3,
+      "p_value": 1.0
+    },
+    {
       "top_k": 1,
       "baseline": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "model": "BAAI/bge-small-en-v1.5",
@@ -122,6 +146,28 @@
       "c": 2,
       "discordant": 2,
       "p_value": 0.5
+    },
+    {
+      "top_k": 15,
+      "baseline": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "model": "BAAI/bge-small-en-v1.5",
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "b": 0,
+      "c": 2,
+      "discordant": 2,
+      "p_value": 0.5
+    },
+    {
+      "top_k": 20,
+      "baseline": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "model": "BAAI/bge-small-en-v1.5",
+      "field": "hit_at_k",
+      "n_paired": 16,
+      "b": 0,
+      "c": 1,
+      "discordant": 1,
+      "p_value": 1.0
     }
   ]
 }

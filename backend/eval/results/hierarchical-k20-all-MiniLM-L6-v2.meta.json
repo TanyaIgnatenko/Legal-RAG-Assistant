@@ -1,9 +1,9 @@
 {
   "config": {
     "chunker": "hierarchical",
-    "top_k": 1,
+    "top_k": 20,
     "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
-    "name": "hierarchical-k1-all-MiniLM-L6-v2"
+    "name": "hierarchical-k20-all-MiniLM-L6-v2"
   },
   "mode": "fast",
   "ground_truth": "quote_spans",
@@ -34,5 +34,5 @@
     "covered_chars": 197890
   },
   "n_questions": 20,
-  "date": "2026-09-30T12:01:42+00:00"
+  "date": "2026-09-30T12:02:45+00:00"
 }
