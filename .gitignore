@@ -33,3 +33,5 @@ Thumbs.db
 *.log
 # Eval caches
 backend/eval/.cache/
+
+# Human labelling sheet — must not be committed with the verdicts

@@ -1,12 +1,16 @@
 """Judge validation: does the LLM judge agree with a human?
 
-    python -m eval.judge_validation export [--config recursive-512-128-k3]
-        -> eval/results/judge_validation.csv with 15 random (answer, verdict)
-           pairs and an empty `human_score` column to fill with 0 / 1
+    python -m eval.judge_validation export
+        -> judge_validation_blind.csv  (question, reference, answer, human_score)
+           judge_validation.csv        (the same rows plus the judge's verdicts)
 
     python -m eval.judge_validation score
         -> Cohen's kappa between human_score and judge_score,
            written to eval/results/judge_validation.json
+
+The human labels the blind file, which does not contain the judge's verdict at
+all: agreement measured against a label anchored on the thing being validated
+would mean nothing. `score` merges the two files back together by pair_id.
 
 If kappa < 0.6 the judge is not trusted and generation metrics stay out of
 the README.
@@ -28,12 +32,16 @@ if str(BACKEND) not in sys.path:
 from eval.runner import RESULTS  # noqa: E402
 
 CSV_PATH = RESULTS / "judge_validation.csv"
+BLIND_PATH = RESULTS / "judge_validation_blind.csv"
 JSON_PATH = RESULTS / "judge_validation.json"
 N_PAIRS = 15
 SEED = 20260919
 KAPPA_THRESHOLD = 0.6
 FIELDS = ["pair_id", "config", "qid", "variant", "question", "reference_answer",
           "answer", "judge_score", "judge_reasoning", "human_score"]
+# What the human sees: the judge's verdict is not in it, so the labelling
+# cannot be anchored by it even by accident.
+BLIND_FIELDS = ["pair_id", "question", "reference_answer", "answer", "human_score"]
 
 
 def cohens_kappa(a: list[int], b: list[int]) -> float:
@@ -82,20 +90,38 @@ def export(configs: list[str]) -> int:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()
         for i, row in enumerate(sample, 1):
-            # The human labels blind: judge columns are kept but should be
-            # hidden while labelling.
             w.writerow({"pair_id": i, **row, "human_score": ""})
-    print(f"wrote {N_PAIRS} pairs -> {CSV_PATH.relative_to(BACKEND)}")
-    print("fill human_score with 0/1 without looking at judge_score, then run: score")
+
+    with BLIND_PATH.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=BLIND_FIELDS)
+        w.writeheader()
+        for i, row in enumerate(sample, 1):
+            w.writerow({"pair_id": i, "question": row["question"],
+                        "reference_answer": row["reference_answer"],
+                        "answer": row["answer"], "human_score": ""})
+
+    print(f"wrote {N_PAIRS} pairs -> {BLIND_PATH.relative_to(BACKEND)}")
+    print("Fill human_score with 0 or 1 in THAT file, then run: score")
+    print(f"(the judge's own verdicts stay in {CSV_PATH.name} and are merged back by pair_id)")
     return 0
 
 
 def score() -> int:
     with CSV_PATH.open(encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
+
+    # Human labels live in the blind file; merge them back by pair_id.
+    if BLIND_PATH.exists():
+        with BLIND_PATH.open(encoding="utf-8", newline="") as f:
+            human = {r["pair_id"]: r["human_score"] for r in csv.DictReader(f)}
+        for row in rows:
+            if not row["human_score"].strip():
+                row["human_score"] = human.get(row["pair_id"], "")
+
     labelled = [r for r in rows if r["human_score"].strip() in ("0", "1")]
     if len(labelled) < len(rows):
-        print(f"{len(rows) - len(labelled)} rows lack a 0/1 human_score")
+        print(f"{len(rows) - len(labelled)} of {len(rows)} rows lack a 0/1 human_score")
+        print(f"fill them in {BLIND_PATH.name}")
         return 1
 
     human = [int(r["human_score"]) for r in labelled]
