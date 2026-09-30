@@ -34,8 +34,14 @@ Eval harness in [`backend/eval/`](backend/eval). 20 GDPR questions across all 11
 each labelled with the exact sentence that answers it. Retrieval is scored by character
 offsets, so different chunkers and encoders are comparable.
 
-**The production config was chosen by measurement**, not by default: hierarchical chunking,
-`bge-small-en-v1.5`, `top_k=10`.
+Three ablation studies were run, each on the same questions:
+
+1. **Chunking** — article-level (hierarchical) vs fixed 512-character windows with overlap.
+2. **Embedding model** — multilingual MiniLM vs all-MiniLM-L6-v2 vs bge-small-en-v1.5.
+3. **top_k** — 1, 3, 5, 7, 10, 15, 20.
+
+The best-measured combination was shipped: **hierarchical chunking, `bge-small-en-v1.5`,
+`top_k=10`**.
 
 | | before | now |
 |---|---|---|
@@ -47,12 +53,6 @@ offsets, so different chunkers and encoders are comparable.
 
 McNemar's exact test on the same questions: 7–0 on retrieval (p = 0.016), 6–0 on
 correctness (p = 0.031).
-
-**How the bottleneck was found.** With the correct passage handed to it, the model answers
-18/20; with no context, 2/20. So generation was fine and every loss was a retrieval miss.
-Traces record the rank of the correct passage, which separated "top_k too small" from "the
-encoder never finds it" — the old multilingual encoder missed 2 of 16 questions at any
-depth, the new one misses none.
 
 **Guardrails.** 12 prompt-injection attacks, half planted inside retrieved documents:
 all held, no system-prompt leak, no invented articles ([`eval/red_team.py`](backend/eval/red_team.py)).
