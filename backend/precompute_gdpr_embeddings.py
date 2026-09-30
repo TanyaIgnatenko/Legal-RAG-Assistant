@@ -38,10 +38,12 @@ def precompute_index(
         rag.setup(pdf_path=pdf_path)
         rag.save_index(output_path)
 
+        # Reload into the same instance: a second RAGDemo would load a second
+        # copy of the encoder, which does not fit alongside the first.
         print(f"\nVerifying {output_path} ...")
-        verifier = RAGDemo(gemini_api_key="", embedding_model=model_name)
-        verifier.load_index(output_path)
-        stored = verifier.vectorstore.docstore._dict
+        rag.vectorstore = None
+        rag.load_index(output_path)
+        stored = rag.vectorstore.docstore._dict
         sample = next(iter(stored.values()))
 
         print(f"   ✓ {len(stored)} chunks indexed")

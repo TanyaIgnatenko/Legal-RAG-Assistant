@@ -13,7 +13,7 @@ import time
 from typing import Callable, TypeVar
 
 T = TypeVar("T")
-MAX_WAITS = 8
+MAX_WAITS = 10
 
 
 class QuotaExhausted(RuntimeError):
@@ -26,7 +26,11 @@ def with_backoff(call: Callable[[], T]) -> T:
             return call()
         except Exception as e:  # provider errors arrive wrapped by langchain
             msg = str(e)
-            if "RESOURCE_EXHAUSTED" not in msg and "429" not in msg:
+            rate_limited = "RESOURCE_EXHAUSTED" in msg or "429" in msg
+            # 503/500 mean the model is busy, not that anything is wrong with
+            # the request; they are as worth waiting out as a rate limit.
+            transient = any(code in msg for code in ("UNAVAILABLE", "503", "INTERNAL", "500"))
+            if not rate_limited and not transient:
                 raise
             if "PerDay" in msg:
                 raise QuotaExhausted(msg[:400]) from e
