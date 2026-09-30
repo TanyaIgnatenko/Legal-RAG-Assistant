@@ -65,9 +65,9 @@ offsets, so different chunkers and encoders are comparable.
 
 Three ablation studies were run, each on the same questions:
 
-1. **Chunking** — article-level (hierarchical) vs fixed 512-character windows with overlap.
-2. **Embedding model** — multilingual MiniLM vs all-MiniLM-L6-v2 vs bge-small-en-v1.5.
-3. **top_k** — 1, 3, 5, 7, 10, 15, 20.
+1. **Chunking** - article-level (hierarchical) vs fixed 512-character windows with overlap.
+2. **Embedding model** - multilingual MiniLM vs all-MiniLM-L6-v2 vs bge-small-en-v1.5.
+3. **top_k** - 1, 3, 5, 7, 10, 15, 20.
 
 The best-measured combination was shipped: **hierarchical chunking, `bge-small-en-v1.5`,
 `top_k=10`**.
@@ -80,14 +80,14 @@ The best-measured combination was shipped: **hierarchical chunking, `bge-small-e
 | hallucinations / bad citations | 0 | 0 |
 | cost per 1,000 questions | $0.62 | $1.92 |
 
-McNemar's exact test on the same questions: 7–0 on retrieval (p = 0.016), 6–0 on
+McNemar's exact test on the same questions: 7-0 on retrieval (p = 0.016), 6-0 on
 correctness (p = 0.031).
 
 **Guardrails.** 12 prompt-injection attacks, half planted inside retrieved documents:
 all held, no system-prompt leak, no invented articles ([`eval/red_team.py`](backend/eval/red_team.py)).
 
-**CI.** Every pull request runs a regression gate — parse, chunk and retrieval, no LLM
-calls — that fails if any metric drops below the committed baseline.
+**CI.** Every pull request runs a regression gate - parse, chunk and retrieval, no LLM
+calls - that fails if any metric drops below the committed baseline.
 
 **Caveats.** 20 questions is a small sample (±20pp on absolute numbers), which is why
 comparisons are paired. Answer-correctness is graded by an LLM judge - agreement with human
