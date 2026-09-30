@@ -132,11 +132,16 @@ class Verdict:
 
 
 def parse_verdict(raw: str) -> tuple[int, str]:
-    """Pull {score, reasoning} out of a judge reply, tolerating code fences."""
-    match = re.search(r"\{.*\}", raw or "", re.S)
-    if not match:
-        raise ValueError(f"judge returned no JSON: {raw[:120]!r}")
-    data = json.loads(match.group(0))
+    """Pull {score, reasoning} out of a judge reply.
+
+    Tolerates code fences and prose around the object, and stops at the end of
+    the first object — the judge sometimes emits two concatenated verdicts,
+    which a greedy `{.*}` would swallow into one unparseable string.
+    """
+    start = (raw or "").find("{")
+    if start == -1:
+        raise ValueError(f"judge returned no JSON: {(raw or '')[:120]!r}")
+    data, _ = json.JSONDecoder().raw_decode(raw, start)
     score = int(data["score"])
     if score not in (0, 1):
         raise ValueError(f"judge score out of range: {score}")

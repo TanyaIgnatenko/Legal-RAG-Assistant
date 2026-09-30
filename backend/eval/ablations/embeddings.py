@@ -32,7 +32,7 @@ if str(BACKEND) not in sys.path:
     sys.path.insert(0, str(BACKEND))
 
 CHUNKER = "hierarchical"
-TOP_KS = [1, 3, 5]
+TOP_KS = [1, 3, 5, 7, 10]
 BASELINE = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 MODELS = [
     BASELINE,                                    # deployed today
