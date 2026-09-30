@@ -1,0 +1,10 @@
+{
+  "n": 15,
+  "agreement": 0.9333333333333333,
+  "cohens_kappa": 0.634,
+  "threshold": 0.6,
+  "trusted": true,
+  "disagreements": [
+    "1"
+  ]
+}

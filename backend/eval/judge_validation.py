@@ -35,7 +35,7 @@ CSV_PATH = RESULTS / "judge_validation.csv"
 BLIND_PATH = RESULTS / "judge_validation_blind.csv"
 JSON_PATH = RESULTS / "judge_validation.json"
 N_PAIRS = 15
-SEED = 20260919
+SEED = 20260930
 KAPPA_THRESHOLD = 0.6
 FIELDS = ["pair_id", "config", "qid", "variant", "question", "reference_answer",
           "answer", "judge_score", "judge_reasoning", "human_score"]
@@ -55,6 +55,28 @@ def cohens_kappa(a: list[int], b: list[int]) -> float:
     if expected == 1.0:
         return 1.0 if observed == 1.0 else 0.0
     return (observed - expected) / (1 - expected)
+
+
+def stratified_sample(pool: list[dict]) -> list[dict]:
+    """Balance the sheet across the judge's own verdicts.
+
+    Sampling uniformly draws mostly no-context answers, which are refusals that
+    both raters mark 0. Agreement on those is free and tells us nothing, and it
+    leaves kappa resting on one or two positive labels — where a single flip
+    swings it from ~1.0 to below zero. Half the sheet is therefore drawn from
+    answers the judge scored 1 and half from answers it scored 0.
+    """
+    rng = random.Random(SEED)
+    positives = [r for r in pool if r["judge_score"] == 1]
+    negatives = [r for r in pool if r["judge_score"] == 0]
+
+    want_pos = min(len(positives), N_PAIRS // 2)
+    want_neg = min(len(negatives), N_PAIRS - want_pos)
+    want_pos = min(len(positives), N_PAIRS - want_neg)
+
+    sample = rng.sample(positives, want_pos) + rng.sample(negatives, want_neg)
+    rng.shuffle(sample)
+    return sample
 
 
 def export(configs: list[str]) -> int:
@@ -85,7 +107,7 @@ def export(configs: list[str]) -> int:
         print(f"only {len(pool)} judged answers; need {N_PAIRS}")
         return 1
 
-    sample = random.Random(SEED).sample(pool, N_PAIRS)
+    sample = stratified_sample(pool)
     with CSV_PATH.open("w", encoding="utf-8", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()

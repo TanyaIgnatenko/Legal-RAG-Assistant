@@ -90,8 +90,8 @@ all held, no system-prompt leak, no invented articles ([`eval/red_team.py`](back
 calls — that fails if any metric drops below the committed baseline.
 
 **Caveats.** 20 questions is a small sample (±20pp on absolute numbers), which is why
-comparisons are paired. Answer-correctness numbers come from an LLM judge that has not yet
-been validated against human labels.
+comparisons are paired. Answer-correctness is graded by an LLM judge whose agreement with
+human labels is still being checked, so treat those numbers as provisional.
 
 Full report: [`backend/eval/results/REPORT.md`](backend/eval/results/REPORT.md).
 
