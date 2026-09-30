@@ -8,35 +8,29 @@ AI-powered legal document analysis to help you understand legal documents more e
 
 **Answers you can check**
 
-- 📎 **Inline citations** — every answer cites the specific GDPR articles it relied on, and
-  those citations are verified against the retrieved context (currently 100% accurate).
-- 📚 **Sources shown** — the passages the answer was built from are listed under it, so a
-  claim can be traced back to the text.
-- 🤐 **Says "I don't know"** — when the context does not support an answer, it declines
-  instead of guessing. Zero hallucinations measured across the eval set.
+- 📎 **Inline citations** - every answer cites the GDPR articles it used, verified against
+  the retrieved text (100% accurate).
+- 📚 **Sources shown** - the passages behind each answer are listed under it.
+- 🤐 **Says "I don't know"** - declines instead of guessing. Zero hallucinations measured.
 
-**Quality is measured, not assumed**
+**Quality is measured**
 
-- 📊 **Eval harness** — 20 GDPR questions labelled with the exact sentence that answers
-  each one; retrieval scored by character offsets.
-- 🔬 **Three ablation studies** — chunking strategy, embedding model, and `top_k`. The
-  shipped configuration is the one that won, with paired significance tests.
-- 💶 **Cost per question tracked** — exact token counts and USD alongside every quality
-  metric, so a cheaper configuration can be compared fairly.
-- 🚦 **CI regression gate** — every pull request re-runs retrieval and fails if quality
-  drops below the committed baseline. No LLM calls, so it is free and deterministic.
+- 📊 **Eval harness** - 20 GDPR questions, each labelled with the sentence that answers it.
+- 🔬 **Three ablation studies** - chunking, embedding model, `top_k`. The winner shipped.
+- 💶 **Cost per question tracked** - exact tokens and USD next to every quality metric.
+- 🚦 **CI regression gate** - each pull request re-runs retrieval and fails on a drop. Free,
+  no LLM calls.
 
 **Hardened**
 
-- 🛡️ **Prompt-injection defence** — red-teamed with 12 attacks, including ones planted
-  inside the documents themselves. All held, with no system-prompt leak.
-- 🧾 **No invented law** — attacks that plant a fake article or a fake fine were rejected.
+- 🛡️ **Prompt-injection defence** - 12 attacks, including ones hidden in the documents. All
+  held.
+- 🧾 **No invented law** - fake articles and fake fines planted in the text were rejected.
 
 **Practical**
 
-- 📄 **Bring your own PDF** — upload a contract or policy, or use the pre-loaded GDPR.
-- ⚡ **Fast cold start** — the GDPR index is precomputed and committed, so the API answers
-  without re-embedding on boot.
+- 📄 **Bring your own PDF** - upload a contract, or use the pre-loaded GDPR.
+- ⚡ **Fast cold start** - the GDPR index is precomputed, so the API boots ready.
 
 ### 📸 Project Preview
 
